@@ -1,0 +1,33 @@
+# Minimal Roblox globals for selene (used because the full roblox std
+# could not be downloaded in this environment). `std = "roblox"` is better
+# if you have internet access: run `selene generate-roblox-std`.
+base: luau
+name: roblox_globals
+globals:
+  game: { any: true }
+  workspace: { any: true }
+  script: { any: true }
+  plugin: { any: true }
+  Instance: { any: true }
+  Vector3: { any: true }
+  Vector2: { any: true }
+  CFrame: { any: true }
+  Color3: { any: true }
+  UDim: { any: true }
+  UDim2: { any: true }
+  Enum: { any: true }
+  task: { any: true }
+  Random: { any: true }
+  ColorSequence: { any: true }
+  ColorSequenceKeypoint: { any: true }
+  NumberSequence: { any: true }
+  NumberSequenceKeypoint: { any: true }
+  NumberRange: { any: true }
+  TweenInfo: { any: true }
+  typeof: { any: true }
+  time: { any: true }
+  tick: { any: true }
+  warn: { any: true }
+  wait: { any: true }
+  delay: { any: true }
+  spawn: { any: true }

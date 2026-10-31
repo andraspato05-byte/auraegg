@@ -1,0 +1,6 @@
+# Rojo / Studio temp files
+*.rbxl.lock
+*.rbxlx.lock
+sourcemap.json
+roblox.yml
+.DS_Store

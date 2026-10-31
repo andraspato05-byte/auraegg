@@ -1,0 +1,2968 @@
+<roblox version="4">
+  <Item class="Lighting" referent="0">
+    <Properties>
+      <string name="Name">Lighting</string>
+    </Properties>
+  </Item>
+  <Item class="Players" referent="1">
+    <Properties>
+      <string name="Name">Players</string>
+    </Properties>
+  </Item>
+  <Item class="ReplicatedStorage" referent="2">
+    <Properties>
+      <string name="Name">ReplicatedStorage</string>
+    </Properties>
+    <Item class="Folder" referent="3">
+      <Properties>
+        <string name="Name">Shared</string>
+      </Properties>
+      <Item class="ModuleScript" referent="4">
+        <Properties>
+          <string name="Name">Config</string>
+          <string name="Source"><![CDATA[--[[
+	Config (ReplicatedStorage.Shared.Config)
+
+	Every tunable setting for Steal the Aura Egg lives here, plus the full
+	list of Aura Eggs. Shared by the server and the client.
+]]
+
+local Config = {}
+
+Config.GameName = "Steal the Aura Egg"
+
+-- Economy -------------------------------------------------------------------
+Config.StartingCash = 100
+Config.SellMultiplier = 0.5 -- selling an egg refunds this fraction of its price
+
+-- Bases ---------------------------------------------------------------------
+Config.MaxPlots = 8 -- the map has room for exactly 8 bases (set Max Players to 8)
+Config.SlotsPerPlot = 10 -- the base layout has exactly 10 pedestals
+Config.LockDuration = 60 -- seconds a base stays locked
+Config.LockCooldown = 10 -- seconds after a lock ends before it can be locked again
+
+-- Conveyor belt -------------------------------------------------------------
+Config.BeltSpeed = 7 -- studs per second
+Config.BeltSpawnInterval = 2.5 -- seconds between new eggs
+Config.BeltMaxEggs = 40
+Config.AnnounceRarityIndex = 5 -- announce eggs of this rarity index or higher (5 = Legendary)
+
+-- Stealing ------------------------------------------------------------------
+Config.StealHoldDuration = 1.5
+Config.CarryWalkSpeed = 11
+Config.NormalWalkSpeed = 16
+
+-- Bat -----------------------------------------------------------------------
+Config.BatName = "Aura Bat"
+Config.BatCooldown = 0.9
+Config.BatRange = 9
+Config.BatKnockback = 55
+
+-- Saving --------------------------------------------------------------------
+Config.DataStoreName = "StealTheAuraEgg_v1"
+Config.AutosaveInterval = 120
+
+-- Rarities (Weight = how often this rarity appears on the belt) -------------
+Config.Rarities = {
+	{ Name = "Common", Color = Color3.fromRGB(200, 200, 200), Weight = 50 },
+	{ Name = "Uncommon", Color = Color3.fromRGB(90, 225, 100), Weight = 26 },
+	{ Name = "Rare", Color = Color3.fromRGB(60, 150, 255), Weight = 13 },
+	{ Name = "Epic", Color = Color3.fromRGB(180, 85, 255), Weight = 6.5 },
+	{ Name = "Legendary", Color = Color3.fromRGB(255, 195, 40), Weight = 3 },
+	{ Name = "Mythic", Color = Color3.fromRGB(255, 60, 115), Weight = 1.2 },
+	{ Name = "Secret", Color = Color3.fromRGB(255, 255, 255), Weight = 0.3 }, -- shown as rainbow
+}
+
+-- Aura Eggs -----------------------------------------------------------------
+-- Price = cost on the belt, Income = cash per second while it sits on your base
+Config.Eggs = {
+	-- Common
+	{ Id = "DustyAura", Name = "Dusty Aura Egg", Rarity = "Common", Price = 25, Income = 1,
+		EggColor = Color3.fromRGB(214, 200, 175), AuraColor = Color3.fromRGB(255, 245, 220) },
+	{ Id = "PebbleAura", Name = "Pebble Aura Egg", Rarity = "Common", Price = 40, Income = 2,
+		EggColor = Color3.fromRGB(150, 150, 155), AuraColor = Color3.fromRGB(225, 225, 230) },
+	{ Id = "LeafyAura", Name = "Leafy Aura Egg", Rarity = "Common", Price = 60, Income = 3,
+		EggColor = Color3.fromRGB(110, 190, 90), AuraColor = Color3.fromRGB(180, 255, 160) },
+
+	-- Uncommon
+	{ Id = "BubbleAura", Name = "Bubble Aura Egg", Rarity = "Uncommon", Price = 150, Income = 6,
+		EggColor = Color3.fromRGB(140, 210, 255), AuraColor = Color3.fromRGB(205, 240, 255) },
+	{ Id = "EmberAura", Name = "Ember Aura Egg", Rarity = "Uncommon", Price = 250, Income = 10,
+		EggColor = Color3.fromRGB(240, 110, 50), AuraColor = Color3.fromRGB(255, 190, 90) },
+	{ Id = "MintyAura", Name = "Minty Aura Egg", Rarity = "Uncommon", Price = 400, Income = 15,
+		EggColor = Color3.fromRGB(150, 245, 200), AuraColor = Color3.fromRGB(110, 255, 190) },
+
+	-- Rare
+	{ Id = "FrostAura", Name = "Frost Aura Egg", Rarity = "Rare", Price = 1000, Income = 35,
+		EggColor = Color3.fromRGB(200, 235, 255), AuraColor = Color3.fromRGB(120, 210, 255) },
+	{ Id = "ThunderAura", Name = "Thunder Aura Egg", Rarity = "Rare", Price = 1800, Income = 60,
+		EggColor = Color3.fromRGB(255, 230, 70), AuraColor = Color3.fromRGB(255, 255, 140) },
+	{ Id = "OceanAura", Name = "Ocean Aura Egg", Rarity = "Rare", Price = 3000, Income = 95,
+		EggColor = Color3.fromRGB(30, 110, 200), AuraColor = Color3.fromRGB(60, 200, 255) },
+
+	-- Epic
+	{ Id = "ShadowAura", Name = "Shadow Aura Egg", Rarity = "Epic", Price = 8000, Income = 230,
+		EggColor = Color3.fromRGB(45, 35, 60), AuraColor = Color3.fromRGB(150, 70, 255) },
+	{ Id = "CrystalAura", Name = "Crystal Aura Egg", Rarity = "Epic", Price = 14000, Income = 380,
+		EggColor = Color3.fromRGB(235, 170, 255), AuraColor = Color3.fromRGB(255, 140, 255) },
+	{ Id = "VoidAura", Name = "Void Aura Egg", Rarity = "Epic", Price = 25000, Income = 650,
+		EggColor = Color3.fromRGB(15, 10, 25), AuraColor = Color3.fromRGB(110, 40, 200) },
+
+	-- Legendary
+	{ Id = "SolarAura", Name = "Solar Aura Egg", Rarity = "Legendary", Price = 60000, Income = 1500,
+		EggColor = Color3.fromRGB(255, 170, 30), AuraColor = Color3.fromRGB(255, 220, 80) },
+	{ Id = "DragonAura", Name = "Dragon Aura Egg", Rarity = "Legendary", Price = 110000, Income = 2600,
+		EggColor = Color3.fromRGB(170, 25, 25), AuraColor = Color3.fromRGB(255, 90, 30) },
+	{ Id = "CosmicAura", Name = "Cosmic Aura Egg", Rarity = "Legendary", Price = 200000, Income = 4500,
+		EggColor = Color3.fromRGB(40, 30, 110), AuraColor = Color3.fromRGB(120, 160, 255) },
+
+	-- Mythic
+	{ Id = "PhoenixAura", Name = "Phoenix Aura Egg", Rarity = "Mythic", Price = 600000, Income = 12000,
+		EggColor = Color3.fromRGB(255, 90, 20), AuraColor = Color3.fromRGB(255, 200, 40) },
+	{ Id = "GalaxyAura", Name = "Galaxy Aura Egg", Rarity = "Mythic", Price = 1200000, Income = 22000,
+		EggColor = Color3.fromRGB(70, 20, 120), AuraColor = Color3.fromRGB(255, 80, 200) },
+
+	-- Secret
+	{ Id = "RainbowAura", Name = "Rainbow Aura Egg", Rarity = "Secret", Price = 5000000, Income = 80000,
+		EggColor = Color3.fromRGB(255, 255, 255), AuraColor = Color3.fromRGB(255, 255, 255) },
+	{ Id = "OmegaAura", Name = "Omega Aura Egg", Rarity = "Secret", Price = 15000000, Income = 220000,
+		EggColor = Color3.fromRGB(10, 10, 10), AuraColor = Color3.fromRGB(255, 255, 255) },
+}
+
+-- Lookup tables ---------------------------------------------------------------
+Config.RarityByName = {}
+for index, rarity in Config.Rarities do
+	rarity.Index = index
+	Config.RarityByName[rarity.Name] = rarity
+end
+
+Config.EggById = {}
+Config.EggsByRarity = {}
+for _, egg in Config.Eggs do
+	assert(Config.RarityByName[egg.Rarity], "Egg " .. egg.Id .. " has an unknown rarity: " .. egg.Rarity)
+	assert(Config.EggById[egg.Id] == nil, "Duplicate egg id: " .. egg.Id)
+	Config.EggById[egg.Id] = egg
+	local list = Config.EggsByRarity[egg.Rarity]
+	if not list then
+		list = {}
+		Config.EggsByRarity[egg.Rarity] = list
+	end
+	table.insert(list, egg)
+end
+
+function Config.GetEgg(eggId)
+	return Config.EggById[eggId]
+end
+
+function Config.GetRarity(rarityName)
+	return Config.RarityByName[rarityName]
+end
+
+-- Picks a random egg id using the rarity weights.
+function Config.RollEggId(rng)
+	local total = 0
+	for _, rarity in Config.Rarities do
+		if Config.EggsByRarity[rarity.Name] then
+			total += rarity.Weight
+		end
+	end
+
+	local roll = rng:NextNumber() * total
+	for _, rarity in Config.Rarities do
+		local list = Config.EggsByRarity[rarity.Name]
+		if list then
+			roll -= rarity.Weight
+			if roll <= 0 then
+				return list[rng:NextInteger(1, #list)].Id
+			end
+		end
+	end
+
+	return Config.Eggs[1].Id
+end
+
+local SUFFIXES = { "", "K", "M", "B", "T", "Qa", "Qi", "Sx" }
+
+-- 1234 -> "1.2K", 5000000 -> "5M"
+function Config.FormatNumber(value)
+	local n = math.floor(value)
+	local v = math.abs(n)
+	local index = 1
+	while v >= 1000 and index < #SUFFIXES do
+		v /= 1000
+		index += 1
+	end
+
+	local text
+	if index == 1 then
+		text = tostring(math.floor(v))
+	else
+		text = string.format("%.1f", math.floor(v * 10) / 10)
+		text = string.gsub(text, "%.0$", "")
+	end
+
+	if n < 0 then
+		text = "-" .. text
+	end
+	return text .. SUFFIXES[index]
+end
+
+function Config.FormatCash(value)
+	return "$" .. Config.FormatNumber(value)
+end
+
+return Config
+]]></string>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="ServerScriptService" referent="5">
+    <Properties>
+      <string name="Name">ServerScriptService</string>
+    </Properties>
+    <Item class="Folder" referent="6">
+      <Properties>
+        <string name="Name">Server</string>
+      </Properties>
+      <Item class="ModuleScript" referent="7">
+        <Properties>
+          <string name="Name">BatService</string>
+          <string name="Source"><![CDATA[--[[
+	BatService
+	Every player gets an Aura Bat. Swinging it at a player knocks them back,
+	and if they are carrying a stolen egg they drop it (it goes home).
+]]
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPack = game:GetService("StarterPack")
+
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local Remotes = require(script.Parent.Remotes)
+local PlotService = require(script.Parent.PlotService)
+
+local BatService = {}
+
+local REST_GRIP = CFrame.new(0, 0, 1.6) -- hold the bat near its back end
+local SWING_GRIP = CFrame.new(0, 0, 1.6) * CFrame.Angles(math.rad(-75), 0, 0)
+
+local template = nil
+local lastSwing = {} -- [Player] = time of last swing
+local hookedTools = setmetatable({}, { __mode = "k" })
+
+local function buildBat()
+	local tool = Instance.new("Tool")
+	tool.Name = Config.BatName
+	tool.ToolTip = "Bonk thieves to make them drop your egg!"
+	tool.CanBeDropped = false
+	tool.RequiresHandle = true
+	tool.Grip = REST_GRIP
+
+	local handle = Instance.new("Part")
+	handle.Name = "Handle"
+	handle.Size = Vector3.new(0.7, 0.7, 4.6)
+	handle.Color = Color3.fromRGB(125, 85, 50)
+	handle.Material = Enum.Material.Wood
+	handle.CanCollide = false
+	handle.Massless = true
+	handle.TopSurface = Enum.SurfaceType.Smooth
+	handle.BottomSurface = Enum.SurfaceType.Smooth
+	handle.CFrame = CFrame.new()
+	handle.Parent = tool
+
+	local tip = Instance.new("Part")
+	tip.Name = "AuraTip"
+	tip.Size = Vector3.new(1, 1, 1.6)
+	tip.Color = Color3.fromRGB(120, 220, 255)
+	tip.Material = Enum.Material.Neon
+	tip.CanCollide = false
+	tip.CanTouch = false
+	tip.CanQuery = false
+	tip.Massless = true
+	tip.TopSurface = Enum.SurfaceType.Smooth
+	tip.BottomSurface = Enum.SurfaceType.Smooth
+	tip.CFrame = handle.CFrame * CFrame.new(0, 0, -1.9) -- the far end, away from the hand
+	tip.Parent = tool
+
+	local tipWeld = Instance.new("WeldConstraint")
+	tipWeld.Part0 = handle
+	tipWeld.Part1 = tip
+	tipWeld.Parent = tip
+
+	local swingSound = Instance.new("Sound")
+	swingSound.Name = "SwingSound"
+	swingSound.SoundId = "rbxasset://sounds/swordslash.wav" -- built into every Roblox install
+	swingSound.Volume = 0.6
+	swingSound.Parent = handle
+
+	return tool
+end
+
+local function getLiving(player)
+	local character = player.Character
+	if not character then
+		return nil, nil
+	end
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local root = character:FindFirstChild("HumanoidRootPart")
+	if not humanoid or not root or humanoid.Health <= 0 then
+		return nil, nil
+	end
+	return humanoid, root
+end
+
+local function swing(player, tool)
+	local character = player.Character
+	if not character or tool.Parent ~= character then
+		return -- only works while equipped
+	end
+	local _, root = getLiving(player)
+	if not root then
+		return
+	end
+
+	local now = time()
+	if now - (lastSwing[player] or -math.huge) < Config.BatCooldown then
+		return
+	end
+	lastSwing[player] = now
+
+	local handle = tool:FindFirstChild("Handle")
+	local sound = handle and handle:FindFirstChild("SwingSound")
+	if sound then
+		sound:Play()
+	end
+
+	tool.Grip = SWING_GRIP
+	task.delay(0.25, function()
+		if tool.Parent then
+			tool.Grip = REST_GRIP
+		end
+	end)
+
+	local look = root.CFrame.LookVector
+	for _, other in Players:GetPlayers() do
+		if other ~= player then
+			local _, otherRoot = getLiving(other)
+			if otherRoot then
+				local offset = otherRoot.Position - root.Position
+				local distance = offset.Magnitude
+				local flat = Vector3.new(offset.X, 0, offset.Z)
+				if distance <= Config.BatRange then
+					-- must be roughly in front of the swinger (or right on top of them)
+					local inFront = flat.Magnitude < 1 or look:Dot(flat.Unit) > 0.1
+					if inFront then
+						local direction = flat.Magnitude >= 0.05 and flat.Unit or look
+						PlotService.OnPlayerBonked(other, player)
+						Remotes.Knockback(other, direction * Config.BatKnockback + Vector3.new(0, 30, 0))
+					end
+				end
+			end
+		end
+	end
+end
+
+local function hookTool(player, tool)
+	if hookedTools[tool] then
+		return
+	end
+	hookedTools[tool] = true
+	tool.Activated:Connect(function()
+		swing(player, tool)
+	end)
+end
+
+local function hasBat(player)
+	local backpack = player:FindFirstChildOfClass("Backpack")
+	local character = player.Character
+	return (backpack ~= nil and backpack:FindFirstChild(Config.BatName) ~= nil)
+		or (character ~= nil and character:FindFirstChild(Config.BatName) ~= nil)
+end
+
+function BatService.Init()
+	template = buildBat()
+	template.Parent = StarterPack -- everyone gets a copy each time they spawn
+end
+
+-- Hooks up any bat the character equips (tools move into the character when equipped).
+function BatService.HookCharacter(player, character)
+	character.ChildAdded:Connect(function(child)
+		if child:IsA("Tool") and child.Name == Config.BatName then
+			hookTool(player, child)
+		end
+	end)
+	for _, child in character:GetChildren() do
+		if child:IsA("Tool") and child.Name == Config.BatName then
+			hookTool(player, child)
+		end
+	end
+end
+
+-- Gives a bat if the player somehow spawned without one.
+function BatService.EnsureBat(player)
+	if player.Parent ~= Players or not template or hasBat(player) then
+		return
+	end
+	local backpack = player:FindFirstChildOfClass("Backpack")
+	if backpack then
+		template:Clone().Parent = backpack
+	end
+end
+
+function BatService.Forget(player)
+	lastSwing[player] = nil
+end
+
+return BatService
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="8">
+        <Properties>
+          <string name="Name">ConveyorService</string>
+          <string name="Source"><![CDATA[--[[
+	ConveyorService
+	Spawns random Aura Eggs from the Aura Egg Machine, slides them down the
+	belt, and lets players buy them. A bought egg goes straight onto a free
+	pedestal in the buyer's base.
+]]
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local EggVisuals = require(script.Parent.EggVisuals)
+local Session = require(script.Parent.Session)
+local Remotes = require(script.Parent.Remotes)
+local PlotService = require(script.Parent.PlotService)
+
+local ConveyorService = {}
+
+local COLOR_GOOD = Color3.fromRGB(110, 255, 140)
+local COLOR_BAD = Color3.fromRGB(255, 90, 90)
+local COLOR_PRICE = Color3.fromRGB(255, 220, 70)
+local MAX_BUY_DISTANCE = 20
+
+local rng = Random.new()
+local beltEggs = {} -- array of { Model, EggId, X, Angle, HalfHeight, Bought }
+local belt = nil
+local folder = nil
+
+local function positionEgg(entry)
+	local y = belt.SurfaceY + entry.HalfHeight + 0.3
+	entry.Model:PivotTo(CFrame.new(entry.X, y, belt.Z) * CFrame.Angles(0, entry.Angle, 0))
+end
+
+local function removeEntry(entry)
+	local index = table.find(beltEggs, entry)
+	if index then
+		table.remove(beltEggs, index)
+	end
+	if entry.Model then
+		entry.Model:Destroy()
+	end
+end
+
+local function tryBuy(player, entry)
+	if entry.Bought or not entry.Model.Parent or PlotService.IsShuttingDown() then
+		return
+	end
+
+	local session = Session.Get(player)
+	if not session or not session.Loaded then
+		return
+	end
+
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	if not root or (root.Position - entry.Model:GetPivot().Position).Magnitude > MAX_BUY_DISTANCE then
+		return
+	end
+
+	local def = Config.GetEgg(entry.EggId)
+	local plot = PlotService.GetPlot(player)
+	if not plot then
+		Remotes.Notify(player, "You don't have a base yet!", COLOR_BAD)
+		return
+	end
+
+	local slotIndex = PlotService.FindFreeSlot(plot)
+	if not slotIndex then
+		Remotes.Notify(player, "Your base is full! Sell an egg to make room.", COLOR_BAD)
+		return
+	end
+
+	if not Session.TrySpend(player, def.Price) then
+		Remotes.Notify(player, "You need " .. Config.FormatCash(def.Price) .. " to buy the " .. def.Name .. "!", COLOR_BAD)
+		return
+	end
+
+	entry.Bought = true
+	removeEntry(entry)
+	PlotService.PlaceEgg(plot, slotIndex, entry.EggId)
+	Remotes.Notify(player, "You bought the " .. def.Name .. "! It's on your base now.", COLOR_GOOD)
+end
+
+local function spawnEgg()
+	if #beltEggs >= Config.BeltMaxEggs then
+		return
+	end
+
+	local eggId = Config.RollEggId(rng)
+	local model, def, core = EggVisuals.Create(eggId, true)
+	EggVisuals.AddInfo(model, Config.FormatCash(def.Price), COLOR_PRICE)
+
+	local entry = {
+		Model = model,
+		EggId = eggId,
+		X = belt.StartX,
+		Angle = rng:NextNumber() * math.pi * 2,
+		HalfHeight = core.Size.Y / 2,
+		Bought = false,
+	}
+
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = "BuyPrompt"
+	prompt.ActionText = "Buy " .. Config.FormatCash(def.Price)
+	prompt.ObjectText = def.Name
+	prompt.HoldDuration = 0.25
+	prompt.KeyboardKeyCode = Enum.KeyCode.E
+	prompt.MaxActivationDistance = 12
+	prompt.RequiresLineOfSight = false
+	prompt.Triggered:Connect(function(player)
+		tryBuy(player, entry)
+	end)
+	prompt.Parent = core
+
+	positionEgg(entry)
+	model.Parent = folder
+	table.insert(beltEggs, entry)
+
+	local rarity = Config.GetRarity(def.Rarity)
+	if rarity.Index >= Config.AnnounceRarityIndex then
+		Remotes.NotifyAll("A " .. def.Rarity .. " " .. def.Name .. " just came out of the machine!", rarity.Color)
+	end
+end
+
+local function step(dt)
+	for index = #beltEggs, 1, -1 do
+		local entry = beltEggs[index]
+		entry.X += Config.BeltSpeed * dt
+		entry.Angle += dt * 0.8
+		if entry.X >= belt.EndX then
+			table.remove(beltEggs, index)
+			entry.Model:Destroy()
+		else
+			positionEgg(entry)
+		end
+	end
+end
+
+function ConveyorService.Init(beltInfo)
+	belt = beltInfo
+
+	folder = Instance.new("Folder")
+	folder.Name = "BeltEggs"
+	folder.Parent = workspace
+
+	RunService.Heartbeat:Connect(step)
+
+	task.spawn(function()
+		while true do
+			local ok, err = pcall(spawnEgg)
+			if not ok then
+				warn("[StealTheAuraEgg] Belt spawn error: " .. tostring(err))
+			end
+			task.wait(Config.BeltSpawnInterval)
+		end
+	end)
+end
+
+return ConveyorService
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="9">
+        <Properties>
+          <string name="Name">DataManager</string>
+          <string name="Source"><![CDATA[--[[
+	DataManager
+	Loads and saves player progress (cash, steals and the eggs on each
+	pedestal) with DataStoreService.
+
+	Safety features (stealing moves eggs between players, so a stale or
+	out-of-order save could duplicate eggs):
+	  - Session lock: a server stamps the record with its JobId when it loads a
+	    player, and other servers wait for that lock to be released (or go
+	    stale) before loading the same player.
+	  - Saves for the same player never overlap: if a save is already running,
+	    the newest snapshot is queued and written right after it.
+	  - WaitForAll() lets the server wait for every save before shutting down.
+
+	In Studio, saving only works if the place is published and
+	"Enable Studio Access to API Services" is on (Game Settings > Security).
+	If DataStores are unavailable the game still runs, it just won't save.
+]]
+
+local DataStoreService = game:GetService("DataStoreService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+
+local DataManager = {}
+
+local SAVE_ATTEMPTS = 3
+local LOAD_ATTEMPTS = 8
+local FORCE_LOCK_ATTEMPT = 7 -- after this many tries (~20 s) take over a lock that was never released
+local LOCK_STALE_SECONDS = Config.AutosaveInterval * 3 -- autosaves refresh the lock
+local LOAD_RETRY_WAIT = 3
+
+local store = nil
+do
+	local ok, result = pcall(function()
+		return DataStoreService:GetDataStore(Config.DataStoreName)
+	end)
+	if ok then
+		store = result
+	else
+		warn("[StealTheAuraEgg] DataStores are unavailable, progress will not be saved: " .. tostring(result))
+	end
+end
+
+local writing = {} -- [userId] = true while a save worker is running
+local queued = {} -- [userId] = { Data, Release } newest snapshot waiting to be written
+local inFlight = 0
+
+local function keyFor(userId)
+	return "Player_" .. tostring(userId)
+end
+
+local function defaultData()
+	return {
+		Cash = Config.StartingCash,
+		Steals = 0,
+		Eggs = {}, -- [slotIndex: number] = eggId
+	}
+end
+
+local function isValidCount(value)
+	-- rejects NaN, negatives and infinity
+	return type(value) == "number" and value == value and value >= 0 and value < math.huge
+end
+
+local function sanitize(raw)
+	local data = defaultData()
+	if type(raw) ~= "table" then
+		return data
+	end
+
+	if isValidCount(raw.Cash) then
+		data.Cash = math.floor(raw.Cash)
+	end
+	if isValidCount(raw.Steals) then
+		data.Steals = math.floor(raw.Steals)
+	end
+
+	if type(raw.Eggs) == "table" then
+		for key, eggId in raw.Eggs do
+			local index = tonumber(key)
+			if
+				index
+				and index == math.floor(index)
+				and index >= 1
+				and index <= Config.SlotsPerPlot
+				and type(eggId) == "string"
+				and Config.GetEgg(eggId) ~= nil
+			then
+				data.Eggs[index] = eggId
+			end
+		end
+	end
+
+	return data
+end
+
+local function isLockedByOtherServer(record)
+	if type(record) ~= "table" or type(record.Lock) ~= "table" then
+		return false
+	end
+	local lock = record.Lock
+	if lock.JobId == game.JobId then
+		return false
+	end
+	return type(lock.Time) == "number" and os.time() - lock.Time < LOCK_STALE_SECONDS
+end
+
+function DataManager.IsAvailable()
+	return store ~= nil
+end
+
+-- Returns (data, canSave). canSave is false when loading failed, so the
+-- caller must not save over what is really stored.
+function DataManager.Load(player)
+	if not store then
+		return defaultData(), false
+	end
+
+	local userId = player.UserId
+	local key = keyFor(userId)
+
+	-- If this server is still writing this player's last session (quick rejoin), let it finish.
+	for _ = 1, 60 do
+		if not writing[userId] then
+			break
+		end
+		task.wait(0.25)
+	end
+
+	for attempt = 1, LOAD_ATTEMPTS do
+		local loaded = nil
+		local blocked = false
+		local ok, err = pcall(function()
+			store:UpdateAsync(key, function(old)
+				-- this callback can run more than once, so reset the results each time
+				loaded = nil
+				blocked = false
+				if attempt < FORCE_LOCK_ATTEMPT and isLockedByOtherServer(old) then
+					blocked = true
+					return nil -- cancel the write, try again later
+				end
+				local record = type(old) == "table" and old or {}
+				loaded = sanitize(record)
+				record.Lock = { JobId = game.JobId, Time = os.time() }
+				return record
+			end)
+		end)
+
+		if player.Parent == nil then
+			-- Left while loading: give the lock back so their next server can load right away.
+			if ok and loaded then
+				pcall(function()
+					store:UpdateAsync(key, function(old)
+						if type(old) == "table" and type(old.Lock) == "table" and old.Lock.JobId == game.JobId then
+							old.Lock = nil
+							return old
+						end
+						return nil
+					end)
+				end)
+			end
+			return defaultData(), false
+		end
+		if ok and loaded then
+			return loaded, true
+		end
+		if not ok then
+			warn(string.format("[StealTheAuraEgg] Load failed for %s (attempt %d): %s", player.Name, attempt, tostring(err)))
+		elseif blocked then
+			warn(string.format("[StealTheAuraEgg] %s is still locked by another server (attempt %d)", player.Name, attempt))
+		end
+		if attempt < LOAD_ATTEMPTS then
+			task.wait(LOAD_RETRY_WAIT)
+		end
+	end
+
+	return defaultData(), false
+end
+
+local function write(userId, job)
+	local key = keyFor(userId)
+	for attempt = 1, SAVE_ATTEMPTS do
+		local refused = false
+		local ok, err = pcall(function()
+			store:UpdateAsync(key, function(old)
+				refused = false
+				if isLockedByOtherServer(old) then
+					refused = true -- another server owns this player now; never overwrite it
+					return nil
+				end
+				local record = {
+					Cash = job.Data.Cash,
+					Steals = job.Data.Steals,
+					Eggs = job.Data.Eggs,
+				}
+				if not job.Release then
+					record.Lock = { JobId = game.JobId, Time = os.time() }
+				end
+				return record
+			end)
+		end)
+		if ok then
+			if refused then
+				warn("[StealTheAuraEgg] Skipped saving " .. tostring(userId) .. ": another server owns the data")
+			end
+			return
+		end
+		warn(string.format("[StealTheAuraEgg] Save failed for %s (attempt %d): %s", tostring(userId), attempt, tostring(err)))
+		if attempt < SAVE_ATTEMPTS then
+			task.wait(attempt)
+		end
+	end
+end
+
+-- data = { Cash = number, Steals = number, Eggs = { ["1"] = eggId, ... } }
+-- Egg keys must be strings so the DataStore stores a dictionary, not a holey array.
+-- release = true for the final save of a session (player leaving / server closing).
+-- Does not yield: the write happens in the background, in order, per player.
+function DataManager.Save(userId, data, release)
+	if not store or not data then
+		return
+	end
+
+	local previous = queued[userId]
+	queued[userId] = {
+		Data = data,
+		Release = (release == true) or (previous ~= nil and previous.Release),
+	}
+
+	if writing[userId] then
+		return -- the running worker will pick up the newest snapshot
+	end
+	writing[userId] = true
+	inFlight += 1
+
+	task.spawn(function()
+		while queued[userId] do
+			local job = queued[userId]
+			queued[userId] = nil
+			local ok, err = pcall(write, userId, job)
+			if not ok then
+				warn("[StealTheAuraEgg] Save error for " .. tostring(userId) .. ": " .. tostring(err))
+			end
+		end
+		writing[userId] = nil
+		inFlight -= 1
+	end)
+end
+
+-- Yields until every save has finished (or maxSeconds passes).
+function DataManager.WaitForAll(maxSeconds)
+	local waited = 0
+	while inFlight > 0 and waited < maxSeconds do
+		task.wait(0.1)
+		waited += 0.1
+	end
+end
+
+return DataManager
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="10">
+        <Properties>
+          <string name="Name">EggVisuals</string>
+          <string name="Source"><![CDATA[--[[
+	EggVisuals
+	Builds the 3D model for an Aura Egg: an egg-shaped core, a glowing band,
+	an aura shell, sparkle particles and a light. Higher rarities are
+	bigger and glow more. Secret eggs get a rainbow aura (animated by the client).
+]]
+
+local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+
+local EggVisuals = {}
+
+local BASE_SIZE = Vector3.new(2.6, 3.4, 2.6)
+local RAINBOW = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 60, 60)),
+	ColorSequenceKeypoint.new(0.2, Color3.fromRGB(255, 200, 40)),
+	ColorSequenceKeypoint.new(0.4, Color3.fromRGB(80, 255, 80)),
+	ColorSequenceKeypoint.new(0.6, Color3.fromRGB(60, 200, 255)),
+	ColorSequenceKeypoint.new(0.8, Color3.fromRGB(120, 80, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 60, 200)),
+})
+
+local function makeEllipsoid(name, size, color, material, transparency, anchored)
+	local part = Instance.new("Part")
+	part.Name = name
+	part.Size = size
+	part.Color = color
+	part.Material = material
+	part.Transparency = transparency
+	part.Anchored = anchored
+	part.CanCollide = false
+	part.CanTouch = false
+	part.CastShadow = false
+	part.TopSurface = Enum.SurfaceType.Smooth
+	part.BottomSurface = Enum.SurfaceType.Smooth
+
+	local mesh = Instance.new("SpecialMesh")
+	mesh.MeshType = Enum.MeshType.Sphere -- a Sphere SpecialMesh stretches to the part size, giving an egg shape
+	mesh.Parent = part
+	return part
+end
+
+local function weld(part0, part1)
+	local constraint = Instance.new("WeldConstraint")
+	constraint.Part0 = part0
+	constraint.Part1 = part1
+	constraint.Parent = part1
+end
+
+-- Returns model, eggDefinition, corePart. The model's PrimaryPart is the core.
+function EggVisuals.Create(eggId, anchored)
+	local def = Config.GetEgg(eggId)
+	assert(def, "Unknown egg id: " .. tostring(eggId))
+	local rarity = Config.GetRarity(def.Rarity)
+	local scale = 1 + 0.1 * (rarity.Index - 1)
+	local isSecret = def.Rarity == "Secret"
+
+	local model = Instance.new("Model")
+	model.Name = def.Name
+	model:SetAttribute("EggId", def.Id)
+
+	local core = makeEllipsoid("Core", BASE_SIZE * scale, def.EggColor, Enum.Material.SmoothPlastic, 0, anchored)
+	core.CastShadow = true
+	core.CFrame = CFrame.new()
+	core.Parent = model
+
+	local band = makeEllipsoid(
+		"Band",
+		Vector3.new(core.Size.X * 1.04, 0.45 * scale, core.Size.Z * 1.04),
+		def.AuraColor,
+		Enum.Material.Neon,
+		0,
+		anchored
+	)
+	band.CFrame = CFrame.new(0, -0.15 * scale, 0)
+	band.Parent = model
+	weld(core, band)
+
+	local strongAura = rarity.Index >= 4 -- Epic and above get the shimmering force-field aura
+	local shell = makeEllipsoid(
+		"Aura",
+		core.Size * 1.35,
+		def.AuraColor,
+		strongAura and Enum.Material.ForceField or Enum.Material.Neon,
+		strongAura and 0 or 0.82,
+		anchored
+	)
+	shell.CFrame = CFrame.new()
+	shell.Parent = model
+	weld(core, shell)
+
+	if isSecret then
+		CollectionService:AddTag(shell, "RainbowAura")
+		CollectionService:AddTag(band, "RainbowAura")
+	end
+
+	local attachment = Instance.new("Attachment")
+	attachment.Name = "AuraAttachment"
+	attachment.Parent = core
+
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Name = "AuraSparkles"
+	emitter.Color = isSecret and RAINBOW or ColorSequence.new(def.AuraColor)
+	emitter.LightEmission = 1
+	emitter.Rate = 4 + rarity.Index * 4
+	emitter.Lifetime = NumberRange.new(1, 1.8)
+	emitter.Speed = NumberRange.new(1, 3)
+	emitter.SpreadAngle = Vector2.new(180, 180)
+	emitter.Rotation = NumberRange.new(0, 360)
+	emitter.RotSpeed = NumberRange.new(-90, 90)
+	emitter.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.35 * scale),
+		NumberSequenceKeypoint.new(1, 0),
+	})
+	emitter.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.1),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	emitter.Parent = attachment
+
+	local light = Instance.new("PointLight")
+	light.Color = def.AuraColor
+	light.Brightness = 1 + rarity.Index * 0.3
+	light.Range = 6 + rarity.Index
+	light.Shadows = false
+	light.Parent = core
+
+	model.PrimaryPart = core
+	return model, def, core
+end
+
+local function addLine(gui, text, color, index, count, rainbow)
+	local label = Instance.new("TextLabel")
+	label.Name = "Line" .. index
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.new(1, 0, 1 / count, 0)
+	label.Position = UDim2.new(0, 0, (index - 1) / count, 0)
+	label.Font = Enum.Font.FredokaOne
+	label.TextScaled = true
+	label.Text = text
+	label.TextColor3 = color
+	label.TextStrokeTransparency = 0
+	label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	label.Parent = gui
+	if rainbow then
+		CollectionService:AddTag(label, "RainbowText")
+	end
+	return label
+end
+
+-- Adds the floating name / rarity / income text above an egg.
+-- extraText (optional) adds one more line, e.g. the price on the belt.
+function EggVisuals.AddInfo(model, extraText, extraColor)
+	local core = model.PrimaryPart
+	local def = Config.GetEgg(model:GetAttribute("EggId"))
+	local rarity = Config.GetRarity(def.Rarity)
+
+	local lines = {
+		{ def.Name, Color3.fromRGB(255, 255, 255), false },
+		{ def.Rarity, rarity.Color, def.Rarity == "Secret" },
+		{ Config.FormatCash(def.Income) .. "/s", Color3.fromRGB(110, 255, 140), false },
+	}
+	if extraText then
+		table.insert(lines, { extraText, extraColor or Color3.fromRGB(255, 220, 70), false })
+	end
+
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "EggInfo"
+	gui.Adornee = core
+	gui.Size = UDim2.new(7, 0, 0.8 * #lines, 0) -- scale = studs for BillboardGuis
+	gui.StudsOffset = Vector3.new(0, core.Size.Y / 2 + 0.6 + 0.4 * #lines, 0)
+	gui.AlwaysOnTop = false
+	gui.LightInfluence = 0
+	gui.MaxDistance = 70
+
+	for index, line in lines do
+		addLine(gui, line[1], line[2], index, #lines, line[3])
+	end
+
+	gui.Parent = core
+	return gui
+end
+
+return EggVisuals
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="Script" referent="11">
+        <Properties>
+          <string name="Name">Main</string>
+          <token name="RunContext">0</token>
+          <string name="Source"><![CDATA[--[[
+	STEAL THE AURA EGG - server entry point
+
+	Builds the map, starts every service, and handles players joining,
+	spawning, leaving and the server shutting down.
+]]
+
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Server = script.Parent
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local Remotes = require(Server.Remotes) -- creates the RemoteEvents first
+local MapBuilder = require(Server.MapBuilder)
+local Session = require(Server.Session)
+local DataManager = require(Server.DataManager)
+local PlotService = require(Server.PlotService)
+local ConveyorService = require(Server.ConveyorService)
+local BatService = require(Server.BatService)
+
+------------------------------------------------------------------------------
+-- World setup
+------------------------------------------------------------------------------
+
+Lighting.ClockTime = 14.5
+Lighting.Brightness = 2
+Lighting.OutdoorAmbient = Color3.fromRGB(140, 130, 160)
+if not Lighting:FindFirstChildOfClass("BloomEffect") then
+	local bloom = Instance.new("BloomEffect")
+	bloom.Intensity = 0.6
+	bloom.Size = 24
+	bloom.Threshold = 1.6
+	bloom.Parent = Lighting
+end
+
+-- Build everything before any character can fall into the void.
+local world = MapBuilder.Build()
+PlotService.Init(world.Plots)
+ConveyorService.Init(world.Belt)
+BatService.Init()
+
+------------------------------------------------------------------------------
+-- Players
+------------------------------------------------------------------------------
+
+local function onCharacterAdded(player, character)
+	local humanoid = character:WaitForChild("Humanoid", 10)
+	local root = character:WaitForChild("HumanoidRootPart", 10)
+	if not humanoid or not root or character.Parent == nil then
+		return
+	end
+
+	humanoid.WalkSpeed = Config.NormalWalkSpeed
+	humanoid.Died:Connect(function()
+		PlotService.CancelCarry(player, "You got knocked out and dropped the egg!")
+	end)
+
+	PlotService.SetupCharacter(player, character)
+	BatService.HookCharacter(player, character)
+	task.delay(1, BatService.EnsureBat, player)
+end
+
+-- When a base frees up, give it to a loaded player who joined while every base was taken.
+local function giveFreeBasesToWaitingPlayers()
+	for _, player in Players:GetPlayers() do
+		local session = Session.Get(player)
+		if session and session.Loaded and not PlotService.GetPlot(player) then
+			local plot = PlotService.AssignPlot(player)
+			if not plot then
+				return -- no free bases left
+			end
+			PlotService.LoadEggs(player, session.SavedEggs or {})
+			session.SavedEggs = nil
+			if player.Character then
+				PlotService.SetupCharacter(player, player.Character)
+			end
+			Remotes.Notify(player, "A base opened up. It's yours now!", Color3.fromRGB(110, 255, 140))
+		end
+	end
+end
+
+local function onPlayerAdded(player)
+	if Session.Get(player) then
+		return -- already handled
+	end
+	local session = Session.Create(player)
+
+	local plot = PlotService.AssignPlot(player)
+
+	player.CharacterAdded:Connect(function(character)
+		onCharacterAdded(player, character)
+	end)
+	player.CharacterRemoving:Connect(function()
+		PlotService.CancelCarry(player, nil)
+	end)
+	if player.Character then
+		task.spawn(onCharacterAdded, player, player.Character)
+	end
+
+	local data, canSave = DataManager.Load(player)
+	if player.Parent ~= Players then
+		return -- left while loading
+	end
+
+	session.CanSave = canSave
+	Session.SetCash(player, data.Cash)
+	Session.SetSteals(player, data.Steals)
+	if PlotService.GetPlot(player) then
+		PlotService.LoadEggs(player, data.Eggs)
+	else
+		session.SavedEggs = data.Eggs -- kept safe until a base frees up
+	end
+	session.Loaded = true
+
+	Remotes.Notify(player, "Welcome to " .. Config.GameName .. "!", Color3.fromRGB(200, 140, 255))
+	if plot then
+		Remotes.Notify(player, "Your base has your name over the entrance.", Color3.fromRGB(255, 220, 90))
+	else
+		Remotes.Notify(player, "All bases are taken! You'll get one as soon as someone leaves.", Color3.fromRGB(255, 90, 90))
+		giveFreeBasesToWaitingPlayers()
+	end
+	if not canSave then
+		Remotes.Notify(player, "Saving is off (DataStores unavailable). Progress resets when you leave.", Color3.fromRGB(255, 150, 40))
+	end
+end
+
+local function onPlayerRemoving(player)
+	-- Put every egg that is mid-steal back first, so nothing is lost or duplicated.
+	PlotService.PrepareForLeave(player)
+
+	local session = Session.Get(player)
+	local saveData = nil
+	if session and session.Loaded and session.CanSave and not session.FinalSaved then
+		saveData = PlotService.BuildSaveData(player)
+	end
+
+	PlotService.ReleasePlot(player)
+	Session.Remove(player)
+	BatService.Forget(player)
+	PlotService.Forget(player)
+
+	if saveData then
+		DataManager.Save(player.UserId, saveData, true) -- final save, releases the session lock
+	end
+
+	if not PlotService.IsShuttingDown() then
+		giveFreeBasesToWaitingPlayers()
+	end
+end
+
+Players.PlayerAdded:Connect(onPlayerAdded)
+Players.PlayerRemoving:Connect(onPlayerRemoving)
+for _, player in Players:GetPlayers() do
+	task.spawn(onPlayerAdded, player)
+end
+
+------------------------------------------------------------------------------
+-- Saving
+------------------------------------------------------------------------------
+
+-- DataManager.Save never yields and never runs two saves for the same player at once.
+local function saveEveryone(isFinal)
+	for _, player in Players:GetPlayers() do
+		local session = Session.Get(player)
+		if session and session.Loaded and session.CanSave and not session.FinalSaved then
+			local data = PlotService.BuildSaveData(player)
+			if data then
+				if isFinal then
+					session.FinalSaved = true -- PlayerRemoving must not save an older/newer copy after this
+				end
+				DataManager.Save(player.UserId, data, isFinal)
+			end
+		end
+	end
+end
+
+task.spawn(function()
+	while true do
+		task.wait(Config.AutosaveInterval)
+		if PlotService.IsShuttingDown() then
+			break
+		end
+		saveEveryone(false)
+	end
+end)
+
+game:BindToClose(function()
+	-- Freeze anything that moves eggs between players, then take one final snapshot.
+	PlotService.BeginShutdown()
+	saveEveryone(true)
+	-- Wait for every save, including ones started by players who just left.
+	DataManager.WaitForAll(25)
+end)
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="12">
+        <Properties>
+          <string name="Name">MapBuilder</string>
+          <string name="Source"><![CDATA[--[[
+	MapBuilder
+	Builds the whole world from code when the server starts:
+	  - ground, walkway and invisible map borders
+	  - the Aura Egg Machine and the conveyor belt down the middle
+	  - 8 player bases (4 on each side of the belt), each with
+	    10 pedestals, 10 cash pads, a lock pad and a lock barrier
+
+	Returns { Plots = {plotInfo...}, Belt = beltInfo } for the other services.
+]]
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+
+local MapBuilder = {}
+
+local PLOT_HALF = 28 -- bases are 56 x 56 studs
+local PLOT_X = { -112.5, -37.5, 37.5, 112.5 }
+local PLOT_Z = 50
+local LAYOUT_PLOTS = 8
+local LAYOUT_SLOTS = 10
+
+local BELT_LENGTH = 430
+local BELT_WIDTH = 12
+local BELT_TOP = 1
+
+local FLOOR_COLORS = {
+	Color3.fromRGB(255, 170, 170),
+	Color3.fromRGB(255, 205, 140),
+	Color3.fromRGB(255, 240, 150),
+	Color3.fromRGB(170, 240, 170),
+	Color3.fromRGB(150, 220, 255),
+	Color3.fromRGB(175, 170, 255),
+	Color3.fromRGB(240, 170, 255),
+	Color3.fromRGB(170, 255, 230),
+}
+
+local function newPart(parent, name, size, cframe, color, material, extra)
+	local part = Instance.new("Part")
+	part.Name = name
+	part.Anchored = true
+	part.Size = size
+	part.CFrame = cframe
+	part.Color = color
+	part.Material = material or Enum.Material.SmoothPlastic
+	part.TopSurface = Enum.SurfaceType.Smooth
+	part.BottomSurface = Enum.SurfaceType.Smooth
+	if extra then
+		for property, value in extra do
+			part[property] = value
+		end
+	end
+	part.Parent = parent
+	return part
+end
+
+-- Floating text attached to a part. size is in studs.
+local function newBillboard(adornee, sizeX, sizeY, offset, text, color, maxDistance)
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "Label"
+	gui.Adornee = adornee
+	gui.Size = UDim2.new(sizeX, 0, sizeY, 0)
+	gui.StudsOffset = offset
+	gui.AlwaysOnTop = false
+	gui.LightInfluence = 0
+	gui.MaxDistance = maxDistance or 150
+
+	local label = Instance.new("TextLabel")
+	label.Name = "Text"
+	label.BackgroundTransparency = 1
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.Font = Enum.Font.FredokaOne
+	label.TextScaled = true
+	label.Text = text
+	label.TextColor3 = color
+	label.TextStrokeTransparency = 0
+	label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+	label.Parent = gui
+
+	gui.Parent = adornee
+	return label
+end
+
+local function buildEnvironment(mapFolder)
+	-- Ground (top surface at Y = 0)
+	newPart(mapFolder, "Ground", Vector3.new(520, 2, 340), CFrame.new(0, -1, 0), Color3.fromRGB(96, 176, 82), Enum.Material.Grass)
+
+	-- Walkway along the belt
+	newPart(mapFolder, "Walkway", Vector3.new(470, 0.2, 40), CFrame.new(0, 0.1, 0), Color3.fromRGB(200, 200, 210), Enum.Material.Concrete)
+
+	-- Invisible borders so nobody walks off the map
+	local borderProps = { Transparency = 1, CanQuery = false, CastShadow = false }
+	newPart(mapFolder, "BorderN", Vector3.new(520, 80, 2), CFrame.new(0, 40, 171), Color3.new(), nil, borderProps)
+	newPart(mapFolder, "BorderS", Vector3.new(520, 80, 2), CFrame.new(0, 40, -171), Color3.new(), nil, borderProps)
+	newPart(mapFolder, "BorderE", Vector3.new(2, 80, 340), CFrame.new(261, 40, 0), Color3.new(), nil, borderProps)
+	newPart(mapFolder, "BorderW", Vector3.new(2, 80, 340), CFrame.new(-261, 40, 0), Color3.new(), nil, borderProps)
+
+	-- Conveyor belt (top surface at Y = BELT_TOP)
+	newPart(
+		mapFolder,
+		"ConveyorBelt",
+		Vector3.new(BELT_LENGTH, 1, BELT_WIDTH),
+		CFrame.new(0, BELT_TOP - 0.5, 0),
+		Color3.fromRGB(40, 40, 50),
+		Enum.Material.DiamondPlate
+	)
+	for _, side in { -1, 1 } do
+		newPart(
+			mapFolder,
+			"BeltRail",
+			Vector3.new(BELT_LENGTH, 1.6, 1),
+			CFrame.new(0, 1, side * (BELT_WIDTH / 2 + 0.5)),
+			Color3.fromRGB(160, 90, 255),
+			Enum.Material.Neon
+		)
+	end
+	for x = -200, 200, 16 do
+		newPart(
+			mapFolder,
+			"BeltArrow",
+			Vector3.new(0.6, 0.05, BELT_WIDTH - 4),
+			CFrame.new(x, BELT_TOP + 0.03, 0),
+			Color3.fromRGB(150, 100, 255),
+			Enum.Material.Neon,
+			{ CanCollide = false, CanQuery = false, CanTouch = false, Transparency = 0.3 }
+		)
+	end
+
+	-- The Aura Egg Machine where eggs come out
+	local machineX = -(BELT_LENGTH / 2) - 7
+	local machine = newPart(mapFolder, "AuraEggMachine", Vector3.new(14, 20, 24), CFrame.new(machineX, 10, 0), Color3.fromRGB(70, 40, 120))
+	newPart(mapFolder, "MachineGlow", Vector3.new(14.4, 1.5, 24.4), CFrame.new(machineX, 16, 0), Color3.fromRGB(200, 120, 255), Enum.Material.Neon)
+	newPart(mapFolder, "MachineMouth", Vector3.new(0.4, 7, 12), CFrame.new(machineX + 7.1, 4.5, 0), Color3.fromRGB(10, 5, 20), Enum.Material.Neon)
+	newBillboard(machine, 26, 5, Vector3.new(0, 14, 0), "AURA EGG MACHINE", Color3.fromRGB(230, 180, 255), 400)
+
+	-- Where unsold eggs leave the belt
+	local drainX = (BELT_LENGTH / 2) + 7
+	newPart(mapFolder, "EggDrain", Vector3.new(14, 12, 24), CFrame.new(drainX, 6, 0), Color3.fromRGB(45, 30, 70))
+	newPart(mapFolder, "DrainMouth", Vector3.new(0.4, 7, 12), CFrame.new(drainX - 7.1, 4.5, 0), Color3.fromRGB(10, 5, 20), Enum.Material.Neon)
+
+	-- Big title floating over the middle of the map
+	local titleAnchor = newPart(
+		mapFolder,
+		"TitleAnchor",
+		Vector3.new(1, 1, 1),
+		CFrame.new(0, 34, 0),
+		Color3.new(),
+		nil,
+		{ Transparency = 1, CanCollide = false, CanQuery = false, CanTouch = false }
+	)
+	newBillboard(titleAnchor, 80, 12, Vector3.new(), string.upper(Config.GameName), Color3.fromRGB(200, 140, 255), 800)
+
+	-- Neutral spawn (players are moved to their own base right after spawning)
+	local spawn = Instance.new("SpawnLocation")
+	spawn.Name = "LobbySpawn"
+	spawn.Anchored = true
+	spawn.Size = Vector3.new(8, 1, 8)
+	spawn.CFrame = CFrame.new(0, 0.7, 14)
+	spawn.Color = Color3.fromRGB(180, 120, 255)
+	spawn.Material = Enum.Material.Neon
+	spawn.Neutral = true
+	spawn.Duration = 0
+	spawn.TopSurface = Enum.SurfaceType.Smooth
+	spawn.BottomSurface = Enum.SurfaceType.Smooth
+	spawn.Parent = mapFolder
+end
+
+local function buildPlot(index, plotCFrame, parent)
+	local model = Instance.new("Model")
+	model.Name = "Plot" .. index
+	model:SetAttribute("PlotIndex", index)
+	model:SetAttribute("OwnerUserId", 0)
+	model:SetAttribute("OwnerName", "")
+
+	-- Local plot space: center of the floor at the origin, the entrance is on the -Z side.
+	local function at(x, y, z)
+		return plotCFrame * CFrame.new(x, y, z)
+	end
+
+	local floorColor = FLOOR_COLORS[index] or FLOOR_COLORS[1]
+	local wallColor = Color3.fromRGB(235, 235, 245)
+	local size = PLOT_HALF * 2
+
+	newPart(model, "Floor", Vector3.new(size, 1, size), at(0, 0.5, 0), floorColor)
+	newPart(model, "BackWall", Vector3.new(size, 12, 1), at(0, 7, PLOT_HALF - 0.5), wallColor)
+	newPart(model, "LeftWall", Vector3.new(1, 12, size), at(-(PLOT_HALF - 0.5), 7, 0), wallColor)
+	newPart(model, "RightWall", Vector3.new(1, 12, size), at(PLOT_HALF - 0.5, 7, 0), wallColor)
+	newPart(model, "FrontWallLeft", Vector3.new(20, 12, 1), at(-18, 7, -(PLOT_HALF - 0.5)), wallColor)
+	newPart(model, "FrontWallRight", Vector3.new(20, 12, 1), at(18, 7, -(PLOT_HALF - 0.5)), wallColor)
+	newPart(model, "WallTrim", Vector3.new(size, 0.6, 1.2), at(0, 13.3, PLOT_HALF - 0.5), floorColor, Enum.Material.Neon)
+
+	-- The lock barrier fills the 16-stud entrance gap. Invisible and walk-through until locked.
+	local barrier = newPart(
+		model,
+		"LockBarrier",
+		Vector3.new(16, 12, 1),
+		at(0, 7, -(PLOT_HALF - 0.5)),
+		Color3.fromRGB(255, 50, 50),
+		Enum.Material.ForceField,
+		{ CanCollide = false, Transparency = 1, CastShadow = false, CanTouch = false }
+	)
+
+	-- Owner name over the entrance
+	local signAnchor = newPart(
+		model,
+		"SignAnchor",
+		Vector3.new(1, 1, 1),
+		at(0, 16, -(PLOT_HALF - 0.5)),
+		Color3.new(),
+		nil,
+		{ Transparency = 1, CanCollide = false, CanQuery = false, CanTouch = false }
+	)
+	local signLabel = newBillboard(signAnchor, 22, 3.5, Vector3.new(), "Empty Base", Color3.fromRGB(255, 255, 255), 250)
+
+	-- Pedestals: two columns of 5, cash pad next to each one (towards the middle aisle)
+	local slots = {}
+	for slotIndex = 1, LAYOUT_SLOTS do
+		local column = slotIndex <= 5 and -1 or 1
+		local row = (slotIndex - 1) % 5
+		local x = 17 * column
+		local z = -16 + row * 9
+
+		local pedestal = newPart(
+			model,
+			"Pedestal" .. slotIndex,
+			Vector3.new(6, 1.5, 6),
+			at(x, 1.75, z),
+			Color3.fromRGB(245, 245, 250),
+			Enum.Material.Marble
+		)
+		newPart(model, "PedestalRim" .. slotIndex, Vector3.new(6.4, 0.3, 6.4), at(x, 2.35, z), floorColor, Enum.Material.Neon)
+
+		local padX = x - 5.5 * column
+		local pad = newPart(
+			model,
+			"CashPad" .. slotIndex,
+			Vector3.new(4, 0.3, 4),
+			at(padX, 1.15, z),
+			Color3.fromRGB(70, 230, 110),
+			Enum.Material.Neon,
+			{ CanCollide = false, CanTouch = false }
+		)
+		local padLabel = newBillboard(pad, 5, 1.4, Vector3.new(0, 2.2, 0), "", Color3.fromRGB(120, 255, 140), 60)
+
+		slots[slotIndex] = {
+			Pedestal = pedestal,
+			EggBaseCFrame = at(x, 2.5, z), -- top centre of the pedestal
+			PadLocal = Vector3.new(padX, 0, z),
+			PadLabel = padLabel,
+		}
+	end
+
+	-- Lock pad at the back of the base
+	local lockPadLocal = Vector3.new(0, 0, 22)
+	local lockPad = newPart(
+		model,
+		"LockPad",
+		Vector3.new(6, 0.3, 4),
+		at(lockPadLocal.X, 1.15, lockPadLocal.Z),
+		Color3.fromRGB(255, 70, 70),
+		Enum.Material.Neon,
+		{ CanCollide = false, CanTouch = false }
+	)
+	local lockLabel = newBillboard(lockPad, 8, 1.6, Vector3.new(0, 2.5, 0), "", Color3.fromRGB(255, 255, 255), 80)
+
+	local eggsFolder = Instance.new("Folder")
+	eggsFolder.Name = "Eggs"
+	eggsFolder.Parent = model
+
+	model.Parent = parent
+
+	return {
+		Index = index,
+		Model = model,
+		CFrame = plotCFrame,
+		HalfSize = PLOT_HALF,
+		Barrier = barrier,
+		SignLabel = signLabel,
+		Slots = slots,
+		LockPadLocal = lockPadLocal,
+		LockLabel = lockLabel,
+		EggsFolder = eggsFolder,
+		SpawnCFrame = at(0, 4, 6), -- facing the entrance
+		EjectCFrame = at(0, 4, -38), -- just outside the entrance, on the walkway
+	}
+end
+
+function MapBuilder.Build()
+	assert(Config.MaxPlots <= LAYOUT_PLOTS, "The map only has room for " .. LAYOUT_PLOTS .. " bases")
+	assert(Config.SlotsPerPlot == LAYOUT_SLOTS, "Each base is built with exactly " .. LAYOUT_SLOTS .. " pedestals")
+
+	local mapFolder = Instance.new("Folder")
+	mapFolder.Name = "Map"
+	buildEnvironment(mapFolder)
+	mapFolder.Parent = workspace
+
+	local plotsFolder = Instance.new("Folder")
+	plotsFolder.Name = "Plots"
+	plotsFolder.Parent = workspace
+
+	local plots = {}
+	for index = 1, Config.MaxPlots do
+		local column = ((index - 1) % 4) + 1
+		local side = index <= 4 and -1 or 1
+		-- Rotate so every base's entrance (local -Z) faces the belt at Z = 0.
+		local rotation = side == -1 and CFrame.Angles(0, math.pi, 0) or CFrame.new()
+		local plotCFrame = CFrame.new(PLOT_X[column], 0, PLOT_Z * side) * rotation
+		plots[index] = buildPlot(index, plotCFrame, plotsFolder)
+	end
+
+	return {
+		Plots = plots,
+		Belt = {
+			StartX = -(BELT_LENGTH / 2) + 3,
+			EndX = (BELT_LENGTH / 2) - 3,
+			Z = 0,
+			SurfaceY = BELT_TOP,
+		},
+	}
+end
+
+return MapBuilder
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="13">
+        <Properties>
+          <string name="Name">PlotService</string>
+          <string name="Source"><![CDATA[--[[
+	PlotService
+	Everything that happens on a player's base:
+	  - assigning / releasing bases
+	  - placing eggs on pedestals and earning cash every second
+	  - collecting cash from the green pads
+	  - locking the base with the red pad
+	  - selling your own eggs
+	  - stealing other players' eggs, carrying them home, and dropping them
+	    if you die or get bonked with a bat
+]]
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local PhysicsService = game:GetService("PhysicsService")
+
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local EggVisuals = require(script.Parent.EggVisuals)
+local Session = require(script.Parent.Session)
+local Remotes = require(script.Parent.Remotes)
+
+local PlotService = {}
+
+local COLOR_GOOD = Color3.fromRGB(110, 255, 140)
+local COLOR_BAD = Color3.fromRGB(255, 90, 90)
+local COLOR_INFO = Color3.fromRGB(255, 220, 90)
+local COLOR_ALERT = Color3.fromRGB(255, 150, 40)
+
+local PROMPT_DISTANCE = 10
+local MAX_INTERACT_DISTANCE = 16 -- server-side sanity check for prompts
+local CARRY_HEIGHT = 3.3 -- studs above the HumanoidRootPart to the bottom of a carried egg
+
+local plots = {} -- array of plot states
+local plotByPlayer = {} -- [Player] = plot state
+local carriers = {} -- [Player] = { FromPlot, SlotIndex, EggId, Model, StartTime, MinTime, LastPos, LastMoveTime }
+local holdStarts = {} -- [Player] = { Prompt, Time } when they started holding a Steal prompt
+local collisionGroupsReady = false
+local shuttingDown = false
+
+local MOVE_SLACK_MULTIPLIER = 1.6 -- carriers may move this much faster than CarryWalkSpeed (lag, jumps)
+local MOVE_SLACK_STUDS = 4
+local HOLD_TOLERANCE = 0.7 -- the server must see at least 70% of the hold time (network jitter)
+
+local carriedFolder = Instance.new("Folder")
+carriedFolder.Name = "CarriedEggs"
+carriedFolder.Parent = workspace
+
+------------------------------------------------------------------------------
+-- Helpers
+------------------------------------------------------------------------------
+
+-- Returns humanoid, rootPart for a living character, or nil.
+local function getLivingCharacter(player)
+	local character = player.Character
+	if not character then
+		return nil, nil
+	end
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local root = character:FindFirstChild("HumanoidRootPart")
+	if not humanoid or not root or humanoid.Health <= 0 then
+		return nil, nil
+	end
+	return humanoid, root
+end
+
+local function ownerGroupName(index)
+	return "PlotOwner" .. index
+end
+
+local function barrierGroupName(index)
+	return "PlotBarrier" .. index
+end
+
+local function isInsidePlot(plot, position)
+	local localPos = plot.Info.CFrame:PointToObjectSpace(position)
+	local half = plot.Info.HalfSize
+	return math.abs(localPos.X) <= half and math.abs(localPos.Z) <= half and localPos.Y > -5 and localPos.Y < 40
+end
+
+local function sellPrice(def)
+	return math.floor(def.Price * Config.SellMultiplier)
+end
+
+local function findFreeSlot(plot)
+	for index, slot in plot.Slots do
+		if slot.EggId == nil then
+			return index
+		end
+	end
+	return nil
+end
+
+local function getIncome(plot)
+	local total = 0
+	for _, slot in plot.Slots do
+		if slot.EggId and not slot.StolenBy then
+			local def = Config.GetEgg(slot.EggId)
+			if def then
+				total += def.Income
+			end
+		end
+	end
+	return total
+end
+
+local function updateIncomeAttribute(plot)
+	if plot.Owner then
+		plot.Owner:SetAttribute("Income", getIncome(plot))
+	end
+end
+
+local function updatePadLabel(plot, slotIndex)
+	local slot = plot.Slots[slotIndex]
+	local label = plot.Info.Slots[slotIndex].PadLabel
+	if slot.StolenBy then
+		label.Text = "STOLEN!"
+		label.TextColor3 = COLOR_BAD
+	elseif slot.EggId then
+		label.Text = Config.FormatCash(slot.Pending)
+		label.TextColor3 = COLOR_GOOD
+	else
+		label.Text = ""
+	end
+end
+
+local function updateLockLabel(plot, now)
+	local label = plot.Info.LockLabel
+	if not plot.Owner then
+		label.Text = ""
+	elseif plot.LockedUntil > 0 then
+		label.Text = "LOCKED " .. math.max(0, math.ceil(plot.LockedUntil - now)) .. "s"
+		label.TextColor3 = COLOR_BAD
+	elseif now < plot.CooldownUntil then
+		label.Text = "READY IN " .. math.ceil(plot.CooldownUntil - now) .. "s"
+		label.TextColor3 = Color3.fromRGB(190, 190, 190)
+	else
+		label.Text = "STEP HERE TO LOCK"
+		label.TextColor3 = Color3.fromRGB(255, 255, 255)
+	end
+end
+
+local function setBarrier(plot, locked)
+	local barrier = plot.Info.Barrier
+	barrier.CanCollide = locked
+	barrier.Transparency = locked and 0 or 1
+end
+
+local function makePrompt(parent, kind, actionText, objectText, holdDuration, keyCode, ownerUserId)
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = kind .. "Prompt"
+	prompt.ActionText = actionText
+	prompt.ObjectText = objectText
+	prompt.HoldDuration = holdDuration
+	prompt.KeyboardKeyCode = keyCode
+	prompt.MaxActivationDistance = PROMPT_DISTANCE
+	prompt.RequiresLineOfSight = false
+	-- The client hides "Steal" on your own eggs and "Sell" on other people's eggs.
+	-- Attributes are set before parenting so they replicate together with the prompt.
+	prompt:SetAttribute("Kind", kind)
+	prompt:SetAttribute("OwnerUserId", ownerUserId)
+	prompt.Parent = parent
+	return prompt
+end
+
+------------------------------------------------------------------------------
+-- Pedestal rendering
+------------------------------------------------------------------------------
+
+local function renderSlot(plot, slotIndex)
+	local slot = plot.Slots[slotIndex]
+	if slot.Display then
+		slot.Display:Destroy()
+		slot.Display = nil
+	end
+
+	if slot.EggId and not slot.StolenBy and plot.Owner then
+		local model, def, core = EggVisuals.Create(slot.EggId, true)
+		EggVisuals.AddInfo(model)
+
+		local ownerUserId = plot.Owner.UserId
+		local stealPrompt =
+			makePrompt(core, "Steal", "Steal", def.Name, Config.StealHoldDuration, Enum.KeyCode.E, ownerUserId)
+		stealPrompt.PromptButtonHoldBegan:Connect(function(player)
+			holdStarts[player] = { Prompt = stealPrompt, Time = time() }
+		end)
+		stealPrompt.Triggered:Connect(function(player)
+			-- The hold timer runs on the client, so make sure the player really held it.
+			local hold = holdStarts[player]
+			holdStarts[player] = nil
+			if not hold or hold.Prompt ~= stealPrompt then
+				return
+			end
+			if time() - hold.Time < Config.StealHoldDuration * HOLD_TOLERANCE then
+				return
+			end
+			PlotService.TrySteal(player, plot, slotIndex)
+		end)
+
+		local sellPrompt = makePrompt(
+			core,
+			"Sell",
+			"Sell for " .. Config.FormatCash(sellPrice(def)),
+			def.Name,
+			1,
+			Enum.KeyCode.F,
+			ownerUserId
+		)
+		sellPrompt.Triggered:Connect(function(player)
+			PlotService.TrySell(player, plot, slotIndex)
+		end)
+
+		local baseCFrame = plot.Info.Slots[slotIndex].EggBaseCFrame
+		model:PivotTo(baseCFrame * CFrame.new(0, core.Size.Y / 2 + 0.15, 0))
+		model.Parent = plot.Info.EggsFolder
+		slot.Display = model
+	end
+
+	updatePadLabel(plot, slotIndex)
+end
+
+local function placeEgg(plot, slotIndex, eggId)
+	local slot = plot.Slots[slotIndex]
+	slot.EggId = eggId
+	slot.Pending = 0
+	slot.StolenBy = nil
+	renderSlot(plot, slotIndex)
+	updateIncomeAttribute(plot)
+end
+
+local function collectSlot(plot, slotIndex)
+	local slot = plot.Slots[slotIndex]
+	if plot.Owner and slot.Pending > 0 then
+		Session.AddCash(plot.Owner, slot.Pending)
+		slot.Pending = 0
+		updatePadLabel(plot, slotIndex)
+	end
+end
+
+------------------------------------------------------------------------------
+-- Locking
+------------------------------------------------------------------------------
+
+local function lockPlot(plot, now)
+	plot.LockedUntil = now + Config.LockDuration
+	setBarrier(plot, true)
+	updateLockLabel(plot, now)
+
+	-- Push anyone who is not the owner out of the base so they are not trapped inside.
+	for _, player in Players:GetPlayers() do
+		if player ~= plot.Owner then
+			local _, root = getLivingCharacter(player)
+			if root and isInsidePlot(plot, root.Position) then
+				player.Character:PivotTo(plot.Info.EjectCFrame)
+				local carry = carriers[player]
+				if carry then
+					-- the server moved them, so this jump must not count as speed hacking
+					carry.LastPos = plot.Info.EjectCFrame.Position
+					carry.LastMoveTime = now
+				end
+				Remotes.Notify(player, "That base just got locked!", COLOR_ALERT)
+			end
+		end
+	end
+
+	Remotes.Notify(plot.Owner, "Base locked for " .. Config.LockDuration .. " seconds!", COLOR_GOOD)
+end
+
+local function unlockPlot(plot, now)
+	plot.LockedUntil = 0
+	plot.CooldownUntil = now + Config.LockCooldown
+	setBarrier(plot, false)
+	Remotes.Notify(plot.Owner, "Your base is unlocked! Thieves can get in.", COLOR_ALERT)
+end
+
+------------------------------------------------------------------------------
+-- Carrying stolen eggs
+------------------------------------------------------------------------------
+
+local function createCarryModel(thief, eggId, root)
+	local model, _, core = EggVisuals.Create(eggId, false)
+	model.Name = "Carried_" .. thief.Name
+	EggVisuals.AddInfo(model, "STOLEN BY " .. string.upper(thief.DisplayName), COLOR_BAD)
+
+	for _, descendant in model:GetDescendants() do
+		if descendant:IsA("BasePart") then
+			descendant.Massless = true
+			descendant.CanCollide = false
+			descendant.CanTouch = false
+			descendant.CanQuery = false
+		end
+	end
+
+	local offset = CFrame.new(0, CARRY_HEIGHT + core.Size.Y / 2, 0)
+	model:PivotTo(root.CFrame * offset)
+
+	local carryWeld = Instance.new("Weld")
+	carryWeld.Name = "CarryWeld"
+	carryWeld.Part0 = root
+	carryWeld.Part1 = core
+	carryWeld.C0 = offset
+	carryWeld.C1 = CFrame.new()
+	carryWeld.Parent = core
+
+	model.Parent = carriedFolder
+	return model
+end
+
+-- Clears the carry state without touching who owns the egg.
+local function endCarry(thief)
+	local carry = carriers[thief]
+	if not carry then
+		return nil
+	end
+	carriers[thief] = nil
+
+	if carry.Model then
+		carry.Model:Destroy()
+	end
+
+	local character = thief.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid.WalkSpeed = Config.NormalWalkSpeed
+	end
+	thief:SetAttribute("CarryingEgg", "")
+	return carry
+end
+
+-- The thief failed: the egg goes back onto the owner's pedestal.
+function PlotService.CancelCarry(thief, message)
+	local carry = endCarry(thief)
+	if not carry then
+		return
+	end
+
+	local plot = carry.FromPlot
+	local slot = plot.Slots[carry.SlotIndex]
+	if slot.StolenBy == thief then
+		slot.StolenBy = nil
+		renderSlot(plot, carry.SlotIndex)
+		updateIncomeAttribute(plot)
+		if plot.Owner and plot.Owner ~= thief then
+			local def = Config.GetEgg(carry.EggId)
+			Remotes.Notify(plot.Owner, "Your " .. (def and def.Name or "egg") .. " is back on its pedestal!", COLOR_GOOD)
+		end
+	end
+
+	if message then
+		Remotes.Notify(thief, message, COLOR_BAD)
+	end
+end
+
+-- The thief made it home: the egg moves to the thief's base.
+local function deliver(thief)
+	local carry = carriers[thief]
+	local ownPlot = plotByPlayer[thief]
+	if not carry or not ownPlot or shuttingDown then
+		return
+	end
+
+	local victimPlot = carry.FromPlot
+	local victimSlot = victimPlot.Slots[carry.SlotIndex]
+	if victimSlot.StolenBy ~= thief or victimSlot.EggId ~= carry.EggId then
+		-- State changed underneath us (should not happen); drop the carry safely.
+		PlotService.CancelCarry(thief, nil)
+		return
+	end
+
+	local freeIndex = findFreeSlot(ownPlot)
+	if not freeIndex then
+		PlotService.CancelCarry(thief, "Your base is full! The egg flew back to its owner.")
+		return
+	end
+
+	local def = Config.GetEgg(carry.EggId)
+	local victim = victimPlot.Owner
+
+	-- Remove from the victim
+	victimSlot.EggId = nil
+	victimSlot.Pending = 0
+	victimSlot.StolenBy = nil
+	renderSlot(victimPlot, carry.SlotIndex)
+	updateIncomeAttribute(victimPlot)
+
+	-- Give to the thief
+	endCarry(thief)
+	placeEgg(ownPlot, freeIndex, carry.EggId)
+	Session.AddSteal(thief)
+
+	Remotes.Notify(thief, "You stole the " .. def.Name .. "!", COLOR_GOOD)
+	if victim then
+		Remotes.Notify(victim, thief.DisplayName .. " stole your " .. def.Name .. "!", COLOR_BAD)
+	end
+
+	local rarity = Config.GetRarity(def.Rarity)
+	if rarity.Index >= Config.AnnounceRarityIndex and victim then
+		Remotes.NotifyAll(
+			thief.DisplayName .. " stole a " .. def.Rarity .. " " .. def.Name .. " from " .. victim.DisplayName .. "!",
+			rarity.Color
+		)
+	end
+end
+
+------------------------------------------------------------------------------
+-- Prompt actions
+------------------------------------------------------------------------------
+
+local function isWithinReach(player, position)
+	local _, root = getLivingCharacter(player)
+	return root ~= nil and (root.Position - position).Magnitude <= MAX_INTERACT_DISTANCE
+end
+
+function PlotService.TrySteal(thief, plot, slotIndex)
+	if shuttingDown then
+		return
+	end
+	local session = Session.Get(thief)
+	if not session or not session.Loaded then
+		return
+	end
+	if plot.Owner == nil or plot.Owner == thief then
+		return
+	end
+	local ownerSession = Session.Get(plot.Owner)
+	if not ownerSession or not ownerSession.Loaded then
+		return
+	end
+	-- If only one of the two players can save, a steal would delete or duplicate the egg.
+	if ownerSession.CanSave ~= session.CanSave then
+		Remotes.Notify(thief, "Stealing is off for this player right now (their save didn't load).", COLOR_BAD)
+		return
+	end
+
+	local slot = plot.Slots[slotIndex]
+	if not slot or not slot.EggId or slot.StolenBy or not slot.Display then
+		return
+	end
+
+	local humanoid, root = getLivingCharacter(thief)
+	if not humanoid or not root then
+		return
+	end
+	if not isWithinReach(thief, slot.Display:GetPivot().Position) then
+		return
+	end
+
+	local thiefPlot = plotByPlayer[thief]
+	if not thiefPlot then
+		Remotes.Notify(thief, "You need a base before you can steal!", COLOR_BAD)
+		return
+	end
+	if carriers[thief] then
+		Remotes.Notify(thief, "You are already carrying an egg!", COLOR_BAD)
+		return
+	end
+	if plot.LockedUntil > 0 then
+		Remotes.Notify(thief, "This base is locked!", COLOR_BAD)
+		return
+	end
+	if not findFreeSlot(thiefPlot) then
+		Remotes.Notify(thief, "Your base is full! Sell an egg first.", COLOR_BAD)
+		return
+	end
+
+	-- The owner keeps whatever cash the egg already made.
+	collectSlot(plot, slotIndex)
+
+	local eggId = slot.EggId
+	local def = Config.GetEgg(eggId)
+	slot.StolenBy = thief
+	renderSlot(plot, slotIndex)
+	updateIncomeAttribute(plot)
+
+	-- Shortest legal time to walk home, used to reject teleporting thieves.
+	local now = time()
+	local homeOffset = thiefPlot.Info.CFrame.Position - root.Position
+	local homeDistance = Vector3.new(homeOffset.X, 0, homeOffset.Z).Magnitude
+	local walkDistance = math.max(0, homeDistance - thiefPlot.Info.HalfSize * 1.5)
+
+	carriers[thief] = {
+		FromPlot = plot,
+		SlotIndex = slotIndex,
+		EggId = eggId,
+		Model = createCarryModel(thief, eggId, root),
+		StartTime = now,
+		MinTime = walkDistance / (Config.CarryWalkSpeed * MOVE_SLACK_MULTIPLIER),
+		LastPos = root.Position,
+		LastMoveTime = now,
+	}
+	humanoid.WalkSpeed = Config.CarryWalkSpeed
+	thief:SetAttribute("CarryingEgg", def.Name)
+
+	Remotes.Notify(thief, "You grabbed the " .. def.Name .. "! Run back to your base!", COLOR_INFO)
+	Remotes.Notify(plot.Owner, thief.DisplayName .. " is stealing your " .. def.Name .. "! Bonk them with your bat!", COLOR_ALERT)
+end
+
+function PlotService.TrySell(player, plot, slotIndex)
+	if shuttingDown or plot.Owner ~= player then
+		return
+	end
+	local slot = plot.Slots[slotIndex]
+	if not slot or not slot.EggId or slot.StolenBy or not slot.Display then
+		return
+	end
+	if not isWithinReach(player, slot.Display:GetPivot().Position) then
+		return
+	end
+
+	collectSlot(plot, slotIndex)
+
+	local def = Config.GetEgg(slot.EggId)
+	local amount = sellPrice(def)
+	Session.AddCash(player, amount)
+
+	slot.EggId = nil
+	slot.Pending = 0
+	renderSlot(plot, slotIndex)
+	updateIncomeAttribute(plot)
+
+	Remotes.Notify(player, "Sold " .. def.Name .. " for " .. Config.FormatCash(amount), COLOR_GOOD)
+end
+
+-- Called by BatService when `victim` gets bonked by `attacker`.
+function PlotService.OnPlayerBonked(victim, attacker)
+	local carry = carriers[victim]
+	if carry then
+		PlotService.CancelCarry(victim, attacker.DisplayName .. " bonked you! You dropped the egg.")
+		Remotes.Notify(attacker, "You bonked " .. victim.DisplayName .. " and saved the egg!", COLOR_GOOD)
+	end
+end
+
+------------------------------------------------------------------------------
+-- Public API used by the other services
+------------------------------------------------------------------------------
+
+function PlotService.GetPlot(player)
+	return plotByPlayer[player]
+end
+
+function PlotService.FindFreeSlot(plot)
+	return findFreeSlot(plot)
+end
+
+function PlotService.PlaceEgg(plot, slotIndex, eggId)
+	placeEgg(plot, slotIndex, eggId)
+end
+
+function PlotService.IsCarrying(player)
+	return carriers[player] ~= nil
+end
+
+function PlotService.IsShuttingDown()
+	return shuttingDown
+end
+
+-- Server is closing: freeze stealing/buying/selling and put every carried egg back,
+-- so the final save snapshot can't be changed afterwards.
+function PlotService.BeginShutdown()
+	shuttingDown = true
+	local thieves = {}
+	for thief in carriers do
+		table.insert(thieves, thief)
+	end
+	for _, thief in thieves do
+		PlotService.CancelCarry(thief, nil)
+	end
+end
+
+function PlotService.Forget(player)
+	holdStarts[player] = nil
+end
+
+function PlotService.AssignPlot(player)
+	local existing = plotByPlayer[player]
+	if existing then
+		return existing
+	end
+
+	for _, plot in plots do
+		if plot.Owner == nil then
+			plot.Owner = player
+			plotByPlayer[player] = plot
+			plot.Info.Model:SetAttribute("OwnerUserId", player.UserId)
+			plot.Info.Model:SetAttribute("OwnerName", player.DisplayName)
+			plot.Info.SignLabel.Text = player.DisplayName .. "'s Base"
+			updateLockLabel(plot, time())
+			player:SetAttribute("Income", 0)
+			player:SetAttribute("CarryingEgg", "")
+			return plot
+		end
+	end
+	return nil
+end
+
+-- Puts saved eggs back on the pedestals. eggs = { [slotIndex] = eggId }
+function PlotService.LoadEggs(player, eggs)
+	local plot = plotByPlayer[player]
+	if not plot then
+		return
+	end
+	for slotIndex, eggId in eggs do
+		local slot = plot.Slots[slotIndex]
+		if slot and slot.EggId == nil and Config.GetEgg(eggId) then
+			placeEgg(plot, slotIndex, eggId)
+		end
+	end
+	updateIncomeAttribute(plot)
+end
+
+-- Collision group + move the new character onto its base.
+function PlotService.SetupCharacter(player, character)
+	local plot = plotByPlayer[player]
+	if not plot then
+		return
+	end
+
+	if collisionGroupsReady then
+		local groupName = ownerGroupName(plot.Index)
+		local function apply(instance)
+			if instance:IsA("BasePart") then
+				instance.CollisionGroup = groupName
+			end
+		end
+		for _, descendant in character:GetDescendants() do
+			apply(descendant)
+		end
+		character.DescendantAdded:Connect(apply)
+	end
+
+	task.spawn(function()
+		-- wait a moment so the engine has finished placing the character at a spawn
+		task.wait(0.15)
+		if character.Parent and plotByPlayer[player] == plot then
+			character:PivotTo(plot.Info.SpawnCFrame)
+		end
+	end)
+end
+
+-- Must be called before saving when a player leaves: puts every egg that is
+-- mid-steal back where it belongs so nothing is lost or duplicated.
+function PlotService.PrepareForLeave(player)
+	PlotService.CancelCarry(player, nil)
+
+	local plot = plotByPlayer[player]
+	if not plot then
+		return
+	end
+	local thieves = {}
+	for thief, carry in carriers do
+		if carry.FromPlot == plot then
+			table.insert(thieves, thief)
+		end
+	end
+	for _, thief in thieves do
+		PlotService.CancelCarry(thief, "The owner left, so the egg went back!")
+	end
+end
+
+-- Snapshot of what should be saved for this player.
+function PlotService.BuildSaveData(player)
+	local session = Session.Get(player)
+	if not session then
+		return nil
+	end
+
+	local eggs = {}
+	local pending = 0
+	local plot = plotByPlayer[player]
+	if plot then
+		for slotIndex, slot in plot.Slots do
+			if slot.EggId then
+				-- An egg that is being stolen right now still belongs to its owner.
+				eggs[tostring(slotIndex)] = slot.EggId
+				pending += slot.Pending
+			end
+		end
+	elseif session.SavedEggs then
+		-- No base yet (server was full): keep the eggs they already own untouched.
+		for slotIndex, eggId in session.SavedEggs do
+			eggs[tostring(slotIndex)] = eggId
+		end
+	end
+
+	return {
+		Cash = session.Cash + pending,
+		Steals = session.Steals,
+		Eggs = eggs,
+	}
+end
+
+function PlotService.ReleasePlot(player)
+	local plot = plotByPlayer[player]
+	if not plot then
+		return
+	end
+	plotByPlayer[player] = nil
+
+	-- Safety net in case PrepareForLeave was not called.
+	local thieves = {}
+	for thief, carry in carriers do
+		if carry.FromPlot == plot then
+			table.insert(thieves, thief)
+		end
+	end
+	for _, thief in thieves do
+		endCarry(thief)
+	end
+
+	plot.Owner = nil
+	for slotIndex, slot in plot.Slots do
+		if slot.Display then
+			slot.Display:Destroy()
+			slot.Display = nil
+		end
+		slot.EggId = nil
+		slot.Pending = 0
+		slot.StolenBy = nil
+		updatePadLabel(plot, slotIndex)
+	end
+
+	plot.LockedUntil = 0
+	plot.CooldownUntil = 0
+	setBarrier(plot, false)
+	updateLockLabel(plot, time())
+	plot.Info.SignLabel.Text = "Empty Base"
+	plot.Info.Model:SetAttribute("OwnerUserId", 0)
+	plot.Info.Model:SetAttribute("OwnerName", "")
+end
+
+------------------------------------------------------------------------------
+-- Game loops
+------------------------------------------------------------------------------
+
+-- Runs once per second: income, lock timers and labels.
+local function tickSecond()
+	local now = time()
+	for _, plot in plots do
+		if plot.Owner then
+			for slotIndex, slot in plot.Slots do
+				if slot.EggId and not slot.StolenBy then
+					local def = Config.GetEgg(slot.EggId)
+					if def then
+						slot.Pending += def.Income
+					end
+				end
+				updatePadLabel(plot, slotIndex)
+			end
+			updateIncomeAttribute(plot)
+		end
+
+		if plot.LockedUntil > 0 and now >= plot.LockedUntil then
+			unlockPlot(plot, now)
+		end
+		updateLockLabel(plot, now)
+	end
+end
+
+-- Runs 10 times per second: deliveries and pads.
+local function tickFast()
+	-- Thieves reaching their own base
+	local thieves = {}
+	for thief in carriers do
+		table.insert(thieves, thief)
+	end
+	for _, thief in thieves do
+		local carry = carriers[thief]
+		if carry then
+			local _, root = getLivingCharacter(thief)
+			if not root then
+				PlotService.CancelCarry(thief, "You dropped the egg!")
+			else
+				local now = time()
+				local position = root.Position
+				local moved = Vector3.new(position.X - carry.LastPos.X, 0, position.Z - carry.LastPos.Z).Magnitude
+				-- Measure from the last time they moved, so a laggy player whose
+				-- position arrives in one burst isn't punished.
+				local allowed = Config.CarryWalkSpeed * (now - carry.LastMoveTime) * MOVE_SLACK_MULTIPLIER
+					+ MOVE_SLACK_STUDS
+				if moved > allowed then
+					PlotService.CancelCarry(thief, "You moved too fast and dropped the egg!")
+				else
+					if moved > 0.01 then
+						carry.LastPos = position
+						carry.LastMoveTime = now
+					end
+					local ownPlot = plotByPlayer[thief]
+					if
+						ownPlot
+						and now - carry.StartTime >= carry.MinTime
+						and isInsidePlot(ownPlot, position)
+					then
+						deliver(thief)
+					end
+				end
+			end
+		end
+	end
+
+	-- Owners standing on their cash pads / lock pad
+	local now = time()
+	for _, plot in plots do
+		local owner = plot.Owner
+		if owner then
+			local _, root = getLivingCharacter(owner)
+			if root then
+				local localPos = plot.Info.CFrame:PointToObjectSpace(root.Position)
+				if localPos.Y > -2 and localPos.Y < 10 then
+					for slotIndex, slotInfo in plot.Info.Slots do
+						local pad = slotInfo.PadLocal
+						if math.abs(localPos.X - pad.X) <= 2.6 and math.abs(localPos.Z - pad.Z) <= 2.6 then
+							collectSlot(plot, slotIndex)
+						end
+					end
+
+					local lockPad = plot.Info.LockPadLocal
+					if math.abs(localPos.X - lockPad.X) <= 3.6 and math.abs(localPos.Z - lockPad.Z) <= 2.6 then
+						if plot.LockedUntil == 0 and now >= plot.CooldownUntil then
+							lockPlot(plot, now)
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+local function runLoop(interval, step, name)
+	task.spawn(function()
+		while true do
+			task.wait(interval)
+			local ok, err = pcall(step)
+			if not ok then
+				warn("[StealTheAuraEgg] " .. name .. " error: " .. tostring(err))
+			end
+		end
+	end)
+end
+
+function PlotService.Init(plotInfos)
+	for index, info in plotInfos do
+		local plot = {
+			Index = index,
+			Info = info,
+			Owner = nil,
+			LockedUntil = 0,
+			CooldownUntil = 0,
+			Slots = {},
+		}
+		for slotIndex = 1, Config.SlotsPerPlot do
+			plot.Slots[slotIndex] = { EggId = nil, Pending = 0, StolenBy = nil, Display = nil }
+		end
+		plots[index] = plot
+	end
+
+	-- Collision groups let the owner walk through their own lock barrier.
+	local ok, err = pcall(function()
+		for index = 1, #plots do
+			for _, groupName in { ownerGroupName(index), barrierGroupName(index) } do
+				if not PhysicsService:IsCollisionGroupRegistered(groupName) then
+					PhysicsService:RegisterCollisionGroup(groupName)
+				end
+			end
+			PhysicsService:CollisionGroupSetCollidable(barrierGroupName(index), ownerGroupName(index), false)
+		end
+	end)
+	if ok then
+		collisionGroupsReady = true
+		for index, plot in plots do
+			plot.Info.Barrier.CollisionGroup = barrierGroupName(index)
+		end
+	else
+		warn("[StealTheAuraEgg] Could not set up collision groups (owners will be blocked by their own lock): " .. tostring(err))
+	end
+
+	runLoop(1, tickSecond, "Income loop")
+	runLoop(0.1, tickFast, "Pad loop")
+end
+
+return PlotService
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="14">
+        <Properties>
+          <string name="Name">Remotes</string>
+          <string name="Source"><![CDATA[--[[
+	Remotes
+	Creates the RemoteEvents used to talk to clients and wraps them in
+	small helpers that never error on players who already left.
+]]
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Remotes = {}
+
+local folder = ReplicatedStorage:FindFirstChild("Remotes")
+if not folder then
+	folder = Instance.new("Folder")
+	folder.Name = "Remotes"
+end
+
+local function getOrCreate(name)
+	local remote = folder:FindFirstChild(name)
+	if not remote then
+		remote = Instance.new("RemoteEvent")
+		remote.Name = name
+		remote.Parent = folder
+	end
+	return remote
+end
+
+Remotes.NotifyEvent = getOrCreate("Notify") -- (text: string, color: Color3)
+Remotes.KnockbackEvent = getOrCreate("Knockback") -- (velocity: Vector3)
+
+folder.Parent = ReplicatedStorage
+
+local WHITE = Color3.fromRGB(255, 255, 255)
+
+local function isInGame(player)
+	return player ~= nil and player.Parent == Players
+end
+
+function Remotes.Notify(player, text, color)
+	if isInGame(player) then
+		Remotes.NotifyEvent:FireClient(player, text, color or WHITE)
+	end
+end
+
+function Remotes.NotifyAll(text, color)
+	Remotes.NotifyEvent:FireAllClients(text, color or WHITE)
+end
+
+function Remotes.Knockback(player, velocity)
+	if isInGame(player) then
+		Remotes.KnockbackEvent:FireClient(player, velocity)
+	end
+end
+
+return Remotes
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="15">
+        <Properties>
+          <string name="Name">Session</string>
+          <string name="Source"><![CDATA[--[[
+	Session
+	Holds each player's live cash / steals while they are in the server and
+	mirrors them into leaderstats so they show on the player list.
+]]
+
+local Session = {}
+
+local sessions = {}
+
+function Session.Create(player)
+	local existing = sessions[player]
+	if existing then
+		return existing
+	end
+
+	local leaderstats = Instance.new("Folder")
+	leaderstats.Name = "leaderstats"
+
+	local cashValue = Instance.new("IntValue")
+	cashValue.Name = "Cash"
+	cashValue.Value = 0
+	cashValue.Parent = leaderstats
+
+	local stealsValue = Instance.new("IntValue")
+	stealsValue.Name = "Steals"
+	stealsValue.Value = 0
+	stealsValue.Parent = leaderstats
+
+	leaderstats.Parent = player
+
+	local session = {
+		Player = player,
+		Cash = 0,
+		Steals = 0,
+		Loaded = false, -- true once saved data has been applied
+		CanSave = false, -- false if loading failed, so we never overwrite real data
+		SavedEggs = nil, -- eggs kept aside while the player is waiting for a free base
+		FinalSaved = false, -- true once the shutdown save has been queued
+		CashValue = cashValue,
+		StealsValue = stealsValue,
+	}
+	sessions[player] = session
+	return session
+end
+
+function Session.Get(player)
+	return sessions[player]
+end
+
+function Session.Remove(player)
+	sessions[player] = nil
+end
+
+function Session.SetCash(player, amount)
+	local session = sessions[player]
+	if not session then
+		return
+	end
+	session.Cash = math.max(0, math.floor(amount))
+	session.CashValue.Value = session.Cash
+end
+
+function Session.AddCash(player, amount)
+	local session = sessions[player]
+	if not session then
+		return
+	end
+	Session.SetCash(player, session.Cash + amount)
+end
+
+-- Returns true and takes the money if the player can afford it.
+function Session.TrySpend(player, amount)
+	local session = sessions[player]
+	if not session or session.Cash < amount then
+		return false
+	end
+	Session.SetCash(player, session.Cash - amount)
+	return true
+end
+
+function Session.SetSteals(player, amount)
+	local session = sessions[player]
+	if not session then
+		return
+	end
+	session.Steals = math.max(0, math.floor(amount))
+	session.StealsValue.Value = session.Steals
+end
+
+function Session.AddSteal(player)
+	local session = sessions[player]
+	if session then
+		Session.SetSteals(player, session.Steals + 1)
+	end
+end
+
+return Session
+]]></string>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="StarterPack" referent="16">
+    <Properties>
+      <string name="Name">StarterPack</string>
+    </Properties>
+  </Item>
+  <Item class="StarterPlayer" referent="17">
+    <Properties>
+      <string name="Name">StarterPlayer</string>
+    </Properties>
+    <Item class="StarterPlayerScripts" referent="18">
+      <Properties>
+        <string name="Name">StarterPlayerScripts</string>
+      </Properties>
+      <Item class="LocalScript" referent="19">
+        <Properties>
+          <string name="Name">ClientMain</string>
+          <string name="Source"><![CDATA[--[[
+	STEAL THE AURA EGG - client
+
+	  - HUD: cash, income per second, carry banner, how-to-play tips
+	  - notification toasts sent by the server
+	  - shows "Steal" only on other people's eggs and "Sell" only on yours
+	  - rainbow colours for Secret eggs
+	  - bat knockback
+]]
+
+local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local remotes = ReplicatedStorage:WaitForChild("Remotes")
+local notifyEvent = remotes:WaitForChild("Notify")
+local knockbackEvent = remotes:WaitForChild("Knockback")
+
+------------------------------------------------------------------------------
+-- HUD
+------------------------------------------------------------------------------
+
+local function addCorner(parent, radius)
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, radius)
+	corner.Parent = parent
+end
+
+local function addStroke(parent, color, thickness)
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = color
+	stroke.Thickness = thickness
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = parent
+end
+
+local function newLabel(parent, name, text, size, position, color)
+	local label = Instance.new("TextLabel")
+	label.Name = name
+	label.BackgroundTransparency = 1
+	label.Size = size
+	label.Position = position
+	label.Font = Enum.Font.FredokaOne
+	label.TextScaled = true
+	label.Text = text
+	label.TextColor3 = color
+	label.TextStrokeTransparency = 0.3
+	label.Parent = parent
+	return label
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AuraEggHud"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Cash panel (top middle)
+local cashPanel = Instance.new("Frame")
+cashPanel.Name = "CashPanel"
+cashPanel.AnchorPoint = Vector2.new(0.5, 0)
+cashPanel.Position = UDim2.new(0.5, 0, 0, 8)
+cashPanel.Size = UDim2.new(0, 260, 0, 70)
+cashPanel.BackgroundColor3 = Color3.fromRGB(30, 20, 50)
+cashPanel.BackgroundTransparency = 0.15
+cashPanel.Parent = screenGui
+addCorner(cashPanel, 14)
+addStroke(cashPanel, Color3.fromRGB(180, 110, 255), 2)
+
+local cashLabel = newLabel(
+	cashPanel,
+	"Cash",
+	"$0",
+	UDim2.new(1, -16, 0.6, 0),
+	UDim2.new(0, 8, 0, 4),
+	Color3.fromRGB(120, 255, 140)
+)
+local incomeLabel = newLabel(
+	cashPanel,
+	"Income",
+	"+$0/s",
+	UDim2.new(1, -16, 0.32, 0),
+	UDim2.new(0, 8, 0.62, 0),
+	Color3.fromRGB(255, 230, 120)
+)
+
+-- Notifications (under the cash panel)
+local notifyHolder = Instance.new("Frame")
+notifyHolder.Name = "Notifications"
+notifyHolder.AnchorPoint = Vector2.new(0.5, 0)
+notifyHolder.Position = UDim2.new(0.5, 0, 0, 86)
+notifyHolder.Size = UDim2.new(0, 460, 0, 220)
+notifyHolder.BackgroundTransparency = 1
+notifyHolder.Parent = screenGui
+
+local notifyLayout = Instance.new("UIListLayout")
+notifyLayout.SortOrder = Enum.SortOrder.LayoutOrder
+notifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+notifyLayout.Padding = UDim.new(0, 4)
+notifyLayout.Parent = notifyHolder
+
+-- Carry banner (bottom middle)
+local carryBanner = newLabel(
+	screenGui,
+	"CarryBanner",
+	"",
+	UDim2.new(0, 520, 0, 44),
+	UDim2.new(0.5, -260, 1, -150),
+	Color3.fromRGB(255, 220, 90)
+)
+carryBanner.BackgroundTransparency = 0.25
+carryBanner.BackgroundColor3 = Color3.fromRGB(60, 20, 20)
+carryBanner.Visible = false
+addCorner(carryBanner, 12)
+
+-- How to play (bottom left, fades after a while)
+local tips = Instance.new("TextLabel")
+tips.Name = "HowToPlay"
+tips.AnchorPoint = Vector2.new(0, 1)
+tips.Position = UDim2.new(0, 12, 1, -12)
+tips.Size = UDim2.new(0, 330, 0, 150)
+tips.BackgroundColor3 = Color3.fromRGB(30, 20, 50)
+tips.BackgroundTransparency = 0.25
+tips.Font = Enum.Font.GothamMedium
+tips.TextSize = 14
+tips.TextWrapped = true
+tips.TextXAlignment = Enum.TextXAlignment.Left
+tips.TextYAlignment = Enum.TextYAlignment.Top
+tips.TextColor3 = Color3.fromRGB(255, 255, 255)
+tips.Text = "HOW TO PLAY\n"
+	.. "- Buy Aura Eggs from the conveyor belt (E)\n"
+	.. "- Eggs on your base make cash every second\n"
+	.. "- Stand on the green pads to collect the cash\n"
+	.. "- Steal eggs from other bases (hold E) and run home\n"
+	.. "- Bonk thieves with your Aura Bat to get eggs back\n"
+	.. "- Stand on the red pad to lock your base"
+tips.Parent = screenGui
+addCorner(tips, 10)
+local tipsPadding = Instance.new("UIPadding")
+tipsPadding.PaddingLeft = UDim.new(0, 10)
+tipsPadding.PaddingRight = UDim.new(0, 10)
+tipsPadding.PaddingTop = UDim.new(0, 8)
+tipsPadding.Parent = tips
+
+task.delay(30, function()
+	local fade = TweenInfo.new(1.5)
+	TweenService:Create(tips, fade, { TextTransparency = 1, BackgroundTransparency = 1 }):Play()
+	task.wait(1.6)
+	tips.Visible = false
+end)
+
+------------------------------------------------------------------------------
+-- Cash / income / carrying
+------------------------------------------------------------------------------
+
+local function refreshIncome()
+	local income = player:GetAttribute("Income") or 0
+	incomeLabel.Text = "+" .. Config.FormatCash(income) .. "/s"
+end
+
+local function refreshCarry()
+	local carrying = player:GetAttribute("CarryingEgg")
+	if type(carrying) == "string" and carrying ~= "" then
+		carryBanner.Text = "Carrying " .. carrying .. "! Run back to your base!"
+		carryBanner.Visible = true
+	else
+		carryBanner.Visible = false
+	end
+end
+
+player:GetAttributeChangedSignal("Income"):Connect(refreshIncome)
+player:GetAttributeChangedSignal("CarryingEgg"):Connect(refreshCarry)
+refreshIncome()
+refreshCarry()
+
+task.spawn(function()
+	local leaderstats = player:WaitForChild("leaderstats")
+	local cash = leaderstats:WaitForChild("Cash")
+	local function refreshCash()
+		cashLabel.Text = Config.FormatCash(cash.Value)
+	end
+	cash.Changed:Connect(refreshCash)
+	refreshCash()
+end)
+
+------------------------------------------------------------------------------
+-- Notifications
+------------------------------------------------------------------------------
+
+local notifyCount = 0
+local MAX_NOTIFICATIONS = 5
+
+notifyEvent.OnClientEvent:Connect(function(text, color)
+	if type(text) ~= "string" then
+		return
+	end
+	if typeof(color) ~= "Color3" then
+		color = Color3.fromRGB(255, 255, 255)
+	end
+
+	notifyCount += 1
+	local label = newLabel(notifyHolder, "Notification", text, UDim2.new(1, 0, 0, 32), UDim2.new(), color)
+	label.LayoutOrder = notifyCount
+	label.BackgroundColor3 = Color3.fromRGB(20, 15, 35)
+	label.BackgroundTransparency = 0.3
+	addCorner(label, 8)
+
+	local constraint = Instance.new("UITextSizeConstraint")
+	constraint.MaxTextSize = 22
+	constraint.Parent = label
+
+	-- keep only the newest few on screen
+	local labels = {}
+	for _, child in notifyHolder:GetChildren() do
+		if child:IsA("TextLabel") then
+			table.insert(labels, child)
+		end
+	end
+	table.sort(labels, function(a, b)
+		return a.LayoutOrder < b.LayoutOrder
+	end)
+	for index = 1, #labels - MAX_NOTIFICATIONS do
+		labels[index]:Destroy()
+	end
+
+	task.delay(4, function()
+		if label.Parent then
+			local fade = TweenService:Create(label, TweenInfo.new(0.6), {
+				TextTransparency = 1,
+				TextStrokeTransparency = 1,
+				BackgroundTransparency = 1,
+			})
+			fade:Play()
+			fade.Completed:Wait()
+			label:Destroy()
+		end
+	end)
+end)
+
+------------------------------------------------------------------------------
+-- Prompt filtering: Steal on other people's eggs, Sell on your own
+------------------------------------------------------------------------------
+
+local function applyPrompt(prompt)
+	local kind = prompt:GetAttribute("Kind")
+	if kind == nil then
+		return
+	end
+	local isMine = prompt:GetAttribute("OwnerUserId") == player.UserId
+	if kind == "Steal" then
+		prompt.Enabled = not isMine
+	elseif kind == "Sell" then
+		prompt.Enabled = isMine
+	end
+end
+
+local function watchPrompt(instance)
+	if instance:IsA("ProximityPrompt") then
+		applyPrompt(instance)
+		instance:GetAttributeChangedSignal("OwnerUserId"):Connect(function()
+			applyPrompt(instance)
+		end)
+	end
+end
+
+workspace.DescendantAdded:Connect(watchPrompt)
+for _, descendant in workspace:GetDescendants() do
+	watchPrompt(descendant)
+end
+
+------------------------------------------------------------------------------
+-- Rainbow Secret eggs
+------------------------------------------------------------------------------
+
+RunService.RenderStepped:Connect(function()
+	local color = Color3.fromHSV((os.clock() * 0.25) % 1, 0.85, 1)
+	for _, instance in CollectionService:GetTagged("RainbowAura") do
+		if instance:IsA("BasePart") then
+			instance.Color = color
+		end
+	end
+	for _, instance in CollectionService:GetTagged("RainbowText") do
+		if instance:IsA("TextLabel") then
+			instance.TextColor3 = color
+		end
+	end
+end)
+
+------------------------------------------------------------------------------
+-- Bat knockback
+------------------------------------------------------------------------------
+
+knockbackEvent.OnClientEvent:Connect(function(velocity)
+	if typeof(velocity) ~= "Vector3" then
+		return
+	end
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	if not humanoid or not root or humanoid.Health <= 0 then
+		return
+	end
+
+	humanoid.PlatformStand = true
+	root.AssemblyLinearVelocity = velocity
+	task.delay(0.6, function()
+		if humanoid.Parent then
+			humanoid.PlatformStand = false
+		end
+	end)
+end)
+]]></string>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="Workspace" referent="20">
+    <Properties>
+      <string name="Name">Workspace</string>
+      <bool name="NeedsPivotMigration">false</bool>
+    </Properties>
+  </Item>
+</roblox>
