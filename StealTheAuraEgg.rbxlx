@@ -62,6 +62,27 @@ Config.BatKnockback = 55
 Config.DataStoreName = "StealTheAuraEgg_v1"
 Config.AutosaveInterval = 120
 
+-- Robux shop -------------------------------------------------------------------
+-- Create these on the Creator Dashboard (create.roblox.com > your game >
+-- Monetization > Passes / Developer Products) and paste each ID below.
+-- An item with Id = 0 shows as "Not set up" in the shop and can't be bought.
+Config.GamePasses = {
+	{ Key = "DoubleCash", Id = 0, Name = "2x Cash", Description = "Every egg on your base makes double cash." },
+	{ Key = "FastCarry", Id = 0, Name = "Speedy Thief", Description = "No slowdown while carrying a stolen egg." },
+	{ Key = "LongLock", Id = 0, Name = "Mega Lock", Description = "Your base stays locked twice as long." },
+}
+
+Config.Products = {
+	{ Key = "CashSmall", Id = 0, Name = "Pile of Cash", Cash = 10000 },
+	{ Key = "CashMedium", Id = 0, Name = "Bag of Cash", Cash = 250000 },
+	{ Key = "CashLarge", Id = 0, Name = "Vault of Cash", Cash = 5000000 },
+	{ Key = "LuckyEgg", Id = 0, Name = "Lucky Aura Egg", LuckyEgg = true },
+}
+
+Config.LuckyEggMinRarity = 5 -- Lucky Aura Egg gives Legendary (5) or better
+Config.DoubleCashMultiplier = 2
+Config.LongLockMultiplier = 2
+
 -- Rarities (Weight = how often this rarity appears on the belt) -------------
 Config.Rarities = {
 	{ Name = "Common", Color = Color3.fromRGB(200, 200, 200), Weight = 50 },
@@ -159,10 +180,12 @@ function Config.GetRarity(rarityName)
 end
 
 -- Picks a random egg id using the rarity weights.
-function Config.RollEggId(rng)
+-- minRarityIndex (optional) skips rarities below it, e.g. 5 = Legendary or better.
+function Config.RollEggId(rng, minRarityIndex)
+	local minIndex = minRarityIndex or 1
 	local total = 0
 	for _, rarity in Config.Rarities do
-		if Config.EggsByRarity[rarity.Name] then
+		if rarity.Index >= minIndex and Config.EggsByRarity[rarity.Name] then
 			total += rarity.Weight
 		end
 	end
@@ -170,7 +193,7 @@ function Config.RollEggId(rng)
 	local roll = rng:NextNumber() * total
 	for _, rarity in Config.Rarities do
 		local list = Config.EggsByRarity[rarity.Name]
-		if list then
+		if rarity.Index >= minIndex and list then
 			roll -= rarity.Weight
 			if roll <= 0 then
 				return list[rng:NextInteger(1, #list)].Id
@@ -178,6 +201,13 @@ function Config.RollEggId(rng)
 		end
 	end
 
+	-- floating point leftovers: return the last eligible egg
+	for index = #Config.Eggs, 1, -1 do
+		local egg = Config.Eggs[index]
+		if Config.GetRarity(egg.Rarity).Index >= minIndex then
+			return egg.Id
+		end
+	end
 	return Config.Eggs[1].Id
 end
 
@@ -1065,6 +1095,7 @@ local DataManager = require(Server.DataManager)
 local PlotService = require(Server.PlotService)
 local ConveyorService = require(Server.ConveyorService)
 local BatService = require(Server.BatService)
+local MonetizationService = require(Server.MonetizationService)
 
 ------------------------------------------------------------------------------
 -- World setup
@@ -1086,6 +1117,7 @@ local world = MapBuilder.Build()
 PlotService.Init(world.Plots)
 ConveyorService.Init(world.Belt)
 BatService.Init()
+MonetizationService.Init()
 
 ------------------------------------------------------------------------------
 -- Players
@@ -1132,6 +1164,7 @@ local function onPlayerAdded(player)
 		return -- already handled
 	end
 	local session = Session.Create(player)
+	task.spawn(MonetizationService.LoadPasses, player)
 
 	local plot = PlotService.AssignPlot(player)
 
@@ -1573,6 +1606,196 @@ return MapBuilder
       </Item>
       <Item class="ModuleScript" referent="13">
         <Properties>
+          <string name="Name">MonetizationService</string>
+          <string name="Source"><![CDATA[--[[
+	MonetizationService
+	Robux purchases:
+	  - Game passes (bought once, kept forever): 2x Cash, Speedy Thief, Mega Lock.
+	    Ownership is stored as player attributes "Pass_<Key>" = true, which
+	    PlotService reads. Only the server sets them.
+	  - Developer products (can be bought again): cash packs and a Lucky Aura Egg.
+	    Granted in ProcessReceipt using Roblox's recommended pattern: every
+	    PurchaseId is recorded in a DataStore so a purchase is never granted twice,
+	    and returning NotProcessedYet makes Roblox retry it later, so it's never lost.
+
+	Set the IDs in ReplicatedStorage.Shared.Config (GamePasses / Products).
+]]
+
+local DataStoreService = game:GetService("DataStoreService")
+local MarketplaceService = game:GetService("MarketplaceService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local Session = require(script.Parent.Session)
+local Remotes = require(script.Parent.Remotes)
+local PlotService = require(script.Parent.PlotService)
+local DataManager = require(script.Parent.DataManager)
+
+local MonetizationService = {}
+
+local COLOR_GOOD = Color3.fromRGB(110, 255, 140)
+
+local rng = Random.new()
+local passById = {}
+local productById = {}
+
+for _, pass in Config.GamePasses do
+	if pass.Id ~= 0 then
+		passById[pass.Id] = pass
+	end
+end
+for _, product in Config.Products do
+	if product.Id ~= 0 then
+		productById[product.Id] = product
+	end
+end
+
+local purchaseStore = nil
+do
+	local ok, result = pcall(function()
+		return DataStoreService:GetDataStore(Config.DataStoreName .. "_Purchases")
+	end)
+	if ok then
+		purchaseStore = result
+	end
+end
+
+local function grantPass(player, pass, announce)
+	if player:GetAttribute("Pass_" .. pass.Key) == true then
+		return
+	end
+	player:SetAttribute("Pass_" .. pass.Key, true)
+	if announce then
+		Remotes.Notify(player, "You got " .. pass.Name .. "! " .. pass.Description, COLOR_GOOD)
+	end
+end
+
+-- Checks which game passes the player owns (yields).
+function MonetizationService.LoadPasses(player)
+	for _, pass in Config.GamePasses do
+		if pass.Id ~= 0 then
+			local ok, owns = pcall(function()
+				return MarketplaceService:UserOwnsGamePassAsync(player.UserId, pass.Id)
+			end)
+			if player.Parent ~= Players then
+				return
+			end
+			if ok and owns then
+				grantPass(player, pass, false)
+			elseif not ok then
+				warn("[StealTheAuraEgg] Could not check game pass " .. pass.Key .. ": " .. tostring(owns))
+			end
+		end
+	end
+end
+
+-- Gives the product to the player. Must not yield. Returns true on success.
+local function grantProduct(player, product)
+	if product.Cash then
+		Session.AddCash(player, product.Cash)
+		Remotes.Notify(player, "You got " .. Config.FormatCash(product.Cash) .. "!", COLOR_GOOD)
+		return true
+	end
+
+	if product.LuckyEgg then
+		local eggId = Config.RollEggId(rng, Config.LuckyEggMinRarity)
+		local def = Config.GetEgg(eggId)
+		local rarity = Config.GetRarity(def.Rarity)
+		local plot = PlotService.GetPlot(player)
+		local slotIndex = plot and PlotService.FindFreeSlot(plot)
+		if plot and slotIndex then
+			PlotService.PlaceEgg(plot, slotIndex, eggId)
+			Remotes.Notify(player, "Lucky! You got a " .. def.Rarity .. " " .. def.Name .. "!", rarity.Color)
+		else
+			-- No room on the base: pay out the egg's full price instead so nothing is lost.
+			Session.AddCash(player, def.Price)
+			Remotes.Notify(
+				player,
+				"Your base was full, so your " .. def.Name .. " became " .. Config.FormatCash(def.Price) .. "!",
+				rarity.Color
+			)
+		end
+		Remotes.NotifyAll(player.DisplayName .. " got a " .. def.Rarity .. " " .. def.Name .. " from a Lucky Egg!", rarity.Color)
+		return true
+	end
+
+	return false
+end
+
+local function processReceipt(receiptInfo)
+	local product = productById[receiptInfo.ProductId]
+	if not product then
+		warn("[StealTheAuraEgg] Unknown developer product: " .. tostring(receiptInfo.ProductId))
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+
+	local player = Players:GetPlayerByUserId(receiptInfo.PlayerId)
+	local session = player and Session.Get(player)
+	if not player or not session or not session.Loaded or PlotService.IsShuttingDown() then
+		return Enum.ProductPurchaseDecision.NotProcessedYet -- Roblox retries later
+	end
+
+	-- No DataStores (e.g. an unpublished Studio test): just grant it.
+	if not purchaseStore or not DataManager.IsAvailable() then
+		if grantProduct(player, product) then
+			return Enum.ProductPurchaseDecision.PurchaseGranted
+		end
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+
+	-- Their save didn't load, so anything granted now would be lost. Wait for a later retry.
+	if not session.CanSave then
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+
+	local ok, recorded = pcall(function()
+		return purchaseStore:UpdateAsync(receiptInfo.PurchaseId, function(alreadyGranted)
+			if alreadyGranted then
+				return true -- granted before (Roblox called us again); don't give it twice
+			end
+			if player.Parent ~= Players then
+				return nil -- left: cancel, Roblox retries later
+			end
+			if not grantProduct(player, product) then
+				error("Failed to grant product " .. product.Key)
+			end
+			return true
+		end)
+	end)
+
+	if not ok then
+		warn("[StealTheAuraEgg] ProcessReceipt failed: " .. tostring(recorded))
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+	if recorded == nil then
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+
+	-- Save soon so the purchase is stored with the player's progress.
+	if player.Parent == Players and session.CanSave and not session.FinalSaved then
+		DataManager.Save(player.UserId, PlotService.BuildSaveData(player), false)
+	end
+	return Enum.ProductPurchaseDecision.PurchaseGranted
+end
+
+function MonetizationService.Init()
+	MarketplaceService.ProcessReceipt = processReceipt
+
+	MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, passId, wasPurchased)
+		local pass = passById[passId]
+		if wasPurchased and pass and player.Parent == Players then
+			grantPass(player, pass, true)
+		end
+	end)
+end
+
+return MonetizationService
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="14">
+        <Properties>
           <string name="Name">PlotService</string>
           <string name="Source"><![CDATA[--[[
 	PlotService
@@ -1666,6 +1889,21 @@ local function findFreeSlot(plot)
 	return nil
 end
 
+-- Game pass effects. The attributes are set only by MonetizationService on the
+-- server (attributes a client sets on itself do not replicate), so they can be trusted.
+local function cashMultiplier(player)
+	return (player and player:GetAttribute("Pass_DoubleCash") == true) and Config.DoubleCashMultiplier or 1
+end
+
+local function carrySpeedFor(player)
+	return player:GetAttribute("Pass_FastCarry") == true and Config.NormalWalkSpeed or Config.CarryWalkSpeed
+end
+
+local function lockDurationFor(player)
+	return (player and player:GetAttribute("Pass_LongLock") == true) and Config.LockDuration * Config.LongLockMultiplier
+		or Config.LockDuration
+end
+
 local function getIncome(plot)
 	local total = 0
 	for _, slot in plot.Slots do
@@ -1676,7 +1914,7 @@ local function getIncome(plot)
 			end
 		end
 	end
-	return total
+	return total * cashMultiplier(plot.Owner)
 end
 
 local function updateIncomeAttribute(plot)
@@ -1817,7 +2055,8 @@ end
 ------------------------------------------------------------------------------
 
 local function lockPlot(plot, now)
-	plot.LockedUntil = now + Config.LockDuration
+	local duration = lockDurationFor(plot.Owner)
+	plot.LockedUntil = now + duration
 	setBarrier(plot, true)
 	updateLockLabel(plot, now)
 
@@ -1838,7 +2077,7 @@ local function lockPlot(plot, now)
 		end
 	end
 
-	Remotes.Notify(plot.Owner, "Base locked for " .. Config.LockDuration .. " seconds!", COLOR_GOOD)
+	Remotes.Notify(plot.Owner, "Base locked for " .. duration .. " seconds!", COLOR_GOOD)
 end
 
 local function unlockPlot(plot, now)
@@ -2049,6 +2288,7 @@ function PlotService.TrySteal(thief, plot, slotIndex)
 
 	-- Shortest legal time to walk home, used to reject teleporting thieves.
 	local now = time()
+	local carrySpeed = carrySpeedFor(thief)
 	local homeOffset = thiefPlot.Info.CFrame.Position - root.Position
 	local homeDistance = Vector3.new(homeOffset.X, 0, homeOffset.Z).Magnitude
 	local walkDistance = math.max(0, homeDistance - thiefPlot.Info.HalfSize * 1.5)
@@ -2059,11 +2299,12 @@ function PlotService.TrySteal(thief, plot, slotIndex)
 		EggId = eggId,
 		Model = createCarryModel(thief, eggId, root),
 		StartTime = now,
-		MinTime = walkDistance / (Config.CarryWalkSpeed * MOVE_SLACK_MULTIPLIER),
+		MinTime = walkDistance / (carrySpeed * MOVE_SLACK_MULTIPLIER),
+		Speed = carrySpeed,
 		LastPos = root.Position,
 		LastMoveTime = now,
 	}
-	humanoid.WalkSpeed = Config.CarryWalkSpeed
+	humanoid.WalkSpeed = carrySpeed
 	thief:SetAttribute("CarryingEgg", def.Name)
 
 	Remotes.Notify(thief, "You grabbed the " .. def.Name .. "! Run back to your base!", COLOR_INFO)
@@ -2316,7 +2557,7 @@ local function tickSecond()
 				if slot.EggId and not slot.StolenBy then
 					local def = Config.GetEgg(slot.EggId)
 					if def then
-						slot.Pending += def.Income
+						slot.Pending += def.Income * cashMultiplier(plot.Owner)
 					end
 				end
 				updatePadLabel(plot, slotIndex)
@@ -2350,7 +2591,7 @@ local function tickFast()
 				local moved = Vector3.new(position.X - carry.LastPos.X, 0, position.Z - carry.LastPos.Z).Magnitude
 				-- Measure from the last time they moved, so a laggy player whose
 				-- position arrives in one burst isn't punished.
-				local allowed = Config.CarryWalkSpeed * (now - carry.LastMoveTime) * MOVE_SLACK_MULTIPLIER
+				local allowed = carry.Speed * (now - carry.LastMoveTime) * MOVE_SLACK_MULTIPLIER
 					+ MOVE_SLACK_STUDS
 				if moved > allowed then
 					PlotService.CancelCarry(thief, "You moved too fast and dropped the egg!")
@@ -2456,7 +2697,7 @@ return PlotService
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="14">
+      <Item class="ModuleScript" referent="15">
         <Properties>
           <string name="Name">Remotes</string>
           <string name="Source"><![CDATA[--[[
@@ -2517,7 +2758,7 @@ return Remotes
 ]]></string>
         </Properties>
       </Item>
-      <Item class="ModuleScript" referent="15">
+      <Item class="ModuleScript" referent="16">
         <Properties>
           <string name="Name">Session</string>
           <string name="Source"><![CDATA[--[[
@@ -2623,20 +2864,20 @@ return Session
       </Item>
     </Item>
   </Item>
-  <Item class="StarterPack" referent="16">
+  <Item class="StarterPack" referent="17">
     <Properties>
       <string name="Name">StarterPack</string>
     </Properties>
   </Item>
-  <Item class="StarterPlayer" referent="17">
+  <Item class="StarterPlayer" referent="18">
     <Properties>
       <string name="Name">StarterPlayer</string>
     </Properties>
-    <Item class="StarterPlayerScripts" referent="18">
+    <Item class="StarterPlayerScripts" referent="19">
       <Properties>
         <string name="Name">StarterPlayerScripts</string>
       </Properties>
-      <Item class="LocalScript" referent="19">
+      <Item class="LocalScript" referent="20">
         <Properties>
           <string name="Name">ClientMain</string>
           <string name="Source"><![CDATA[--[[
@@ -2763,7 +3004,7 @@ local tips = Instance.new("TextLabel")
 tips.Name = "HowToPlay"
 tips.AnchorPoint = Vector2.new(0, 1)
 tips.Position = UDim2.new(0, 12, 1, -12)
-tips.Size = UDim2.new(0, 330, 0, 150)
+tips.Size = UDim2.new(0, 330, 0, 168)
 tips.BackgroundColor3 = Color3.fromRGB(30, 20, 50)
 tips.BackgroundTransparency = 0.25
 tips.Font = Enum.Font.GothamMedium
@@ -2778,7 +3019,8 @@ tips.Text = "HOW TO PLAY\n"
 	.. "- Stand on the green pads to collect the cash\n"
 	.. "- Steal eggs from other bases (hold E) and run home\n"
 	.. "- Bonk thieves with your Aura Bat to get eggs back\n"
-	.. "- Stand on the red pad to lock your base"
+	.. "- Stand on the red pad to lock your base\n"
+	.. "- Press SHOP for Robux boosts"
 tips.Parent = screenGui
 addCorner(tips, 10)
 local tipsPadding = Instance.new("UIPadding")
@@ -2954,12 +3196,220 @@ knockbackEvent.OnClientEvent:Connect(function(velocity)
 		end
 	end)
 end)
+
+------------------------------------------------------------------------------
+-- Robux shop
+------------------------------------------------------------------------------
+
+local MarketplaceService = game:GetService("MarketplaceService")
+
+local function showLocalNotice(text)
+	-- reuse the server notification look for local messages
+	local label = newLabel(notifyHolder, "Notification", text, UDim2.new(1, 0, 0, 32), UDim2.new(), Color3.fromRGB(255, 150, 40))
+	notifyCount += 1
+	label.LayoutOrder = notifyCount
+	label.BackgroundColor3 = Color3.fromRGB(20, 15, 35)
+	label.BackgroundTransparency = 0.3
+	addCorner(label, 8)
+	task.delay(4, function()
+		if label.Parent then
+			label:Destroy()
+		end
+	end)
+end
+
+local shopButton = Instance.new("TextButton")
+shopButton.Name = "ShopButton"
+shopButton.AnchorPoint = Vector2.new(0, 0.5)
+shopButton.Position = UDim2.new(0, 12, 0.5, 0)
+shopButton.Size = UDim2.new(0, 110, 0, 46)
+shopButton.BackgroundColor3 = Color3.fromRGB(255, 190, 40)
+shopButton.Font = Enum.Font.FredokaOne
+shopButton.TextScaled = true
+shopButton.Text = "SHOP"
+shopButton.TextColor3 = Color3.fromRGB(60, 30, 0)
+shopButton.Parent = screenGui
+addCorner(shopButton, 12)
+addStroke(shopButton, Color3.fromRGB(120, 70, 0), 2)
+
+local shopPanel = Instance.new("Frame")
+shopPanel.Name = "ShopPanel"
+shopPanel.AnchorPoint = Vector2.new(0.5, 0.5)
+shopPanel.Position = UDim2.new(0.5, 0, 0.5, 0)
+shopPanel.Size = UDim2.new(0, 440, 0, 470)
+shopPanel.BackgroundColor3 = Color3.fromRGB(30, 20, 50)
+shopPanel.Visible = false
+shopPanel.ZIndex = 5
+shopPanel.Parent = screenGui
+addCorner(shopPanel, 16)
+addStroke(shopPanel, Color3.fromRGB(255, 190, 40), 3)
+
+local shopSizeLimit = Instance.new("UISizeConstraint")
+shopSizeLimit.MaxSize = Vector2.new(440, 470)
+shopSizeLimit.Parent = shopPanel
+local shopScale = Instance.new("UIScale") -- shrink on small (phone) screens
+shopScale.Parent = shopPanel
+
+local shopTitle = newLabel(shopPanel, "Title", "AURA SHOP", UDim2.new(1, -70, 0, 40), UDim2.new(0, 16, 0, 10), Color3.fromRGB(255, 210, 80))
+shopTitle.TextXAlignment = Enum.TextXAlignment.Left
+shopTitle.ZIndex = 6
+
+local closeButton = Instance.new("TextButton")
+closeButton.Name = "Close"
+closeButton.AnchorPoint = Vector2.new(1, 0)
+closeButton.Position = UDim2.new(1, -12, 0, 12)
+closeButton.Size = UDim2.new(0, 36, 0, 36)
+closeButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+closeButton.Font = Enum.Font.FredokaOne
+closeButton.TextScaled = true
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.ZIndex = 6
+closeButton.Parent = shopPanel
+addCorner(closeButton, 8)
+
+local shopList = Instance.new("ScrollingFrame")
+shopList.Name = "Items"
+shopList.Position = UDim2.new(0, 12, 0, 60)
+shopList.Size = UDim2.new(1, -24, 1, -72)
+shopList.BackgroundTransparency = 1
+shopList.BorderSizePixel = 0
+shopList.ScrollBarThickness = 6
+shopList.CanvasSize = UDim2.new(0, 0, 0, 0)
+shopList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+shopList.ZIndex = 6
+shopList.Parent = shopPanel
+
+local shopLayout = Instance.new("UIListLayout")
+shopLayout.SortOrder = Enum.SortOrder.LayoutOrder
+shopLayout.Padding = UDim.new(0, 8)
+shopLayout.Parent = shopList
+
+local itemCount = 0
+
+local function addSectionHeader(text)
+	itemCount += 1
+	local header = newLabel(shopList, "Header", text, UDim2.new(1, -8, 0, 26), UDim2.new(), Color3.fromRGB(200, 160, 255))
+	header.TextXAlignment = Enum.TextXAlignment.Left
+	header.LayoutOrder = itemCount
+	header.ZIndex = 7
+end
+
+-- Builds one shop row. Returns the buy button.
+local function addItem(name, description, infoType, id)
+	itemCount += 1
+	local row = Instance.new("Frame")
+	row.Name = name
+	row.Size = UDim2.new(1, -8, 0, 72)
+	row.BackgroundColor3 = Color3.fromRGB(50, 35, 80)
+	row.LayoutOrder = itemCount
+	row.ZIndex = 7
+	row.Parent = shopList
+	addCorner(row, 10)
+
+	local nameLabel = newLabel(row, "Name", name, UDim2.new(0.62, -12, 0, 30), UDim2.new(0, 12, 0, 6), Color3.fromRGB(255, 255, 255))
+	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+	nameLabel.ZIndex = 8
+
+	local descLabel = newLabel(row, "Description", description, UDim2.new(0.62, -12, 0, 26), UDim2.new(0, 12, 0, 38), Color3.fromRGB(200, 200, 220))
+	descLabel.TextXAlignment = Enum.TextXAlignment.Left
+	descLabel.Font = Enum.Font.GothamMedium
+	descLabel.ZIndex = 8
+
+	local buy = Instance.new("TextButton")
+	buy.Name = "Buy"
+	buy.AnchorPoint = Vector2.new(1, 0.5)
+	buy.Position = UDim2.new(1, -10, 0.5, 0)
+	buy.Size = UDim2.new(0.34, 0, 0, 46)
+	buy.Font = Enum.Font.FredokaOne
+	buy.TextScaled = true
+	buy.TextColor3 = Color3.fromRGB(255, 255, 255)
+	buy.ZIndex = 8
+	buy.Parent = row
+	addCorner(buy, 10)
+
+	if id == 0 then
+		buy.Text = "Not set up"
+		buy.BackgroundColor3 = Color3.fromRGB(90, 90, 100)
+	else
+		buy.Text = "BUY"
+		buy.BackgroundColor3 = Color3.fromRGB(60, 190, 90)
+		-- show the real Robux price
+		task.spawn(function()
+			local ok, info = pcall(function()
+				return MarketplaceService:GetProductInfoAsync(id, infoType)
+			end)
+			if ok and type(info) == "table" and type(info.PriceInRobux) == "number" and buy.Text == "BUY" then
+				buy.Text = "R$ " .. info.PriceInRobux
+			end
+		end)
+	end
+	return buy
+end
+
+addSectionHeader("GAME PASSES (forever)")
+for _, pass in Config.GamePasses do
+	local buy = addItem(pass.Name, pass.Description, Enum.InfoType.GamePass, pass.Id)
+	local attribute = "Pass_" .. pass.Key
+	local function refreshOwned()
+		if player:GetAttribute(attribute) == true then
+			buy.Text = "OWNED"
+			buy.BackgroundColor3 = Color3.fromRGB(110, 80, 160)
+		end
+	end
+	player:GetAttributeChangedSignal(attribute):Connect(refreshOwned)
+	refreshOwned()
+
+	buy.Activated:Connect(function()
+		if pass.Id == 0 then
+			showLocalNotice("This pass isn't set up yet (missing ID in Config).")
+		elseif player:GetAttribute(attribute) ~= true then
+			MarketplaceService:PromptGamePassPurchase(player, pass.Id)
+		end
+	end)
+end
+
+addSectionHeader("ITEMS")
+for _, product in Config.Products do
+	local description
+	if product.Cash then
+		description = "Get " .. Config.FormatCash(product.Cash) .. " cash instantly"
+	elseif product.LuckyEgg then
+		description = "A random Legendary, Mythic or Secret egg!"
+	else
+		description = ""
+	end
+	local buy = addItem(product.Name, description, Enum.InfoType.Product, product.Id)
+	buy.Activated:Connect(function()
+		if product.Id == 0 then
+			showLocalNotice("This item isn't set up yet (missing ID in Config).")
+		else
+			MarketplaceService:PromptProductPurchase(player, product.Id)
+		end
+	end)
+end
+
+local function fitShopToScreen()
+	local camera = workspace.CurrentCamera
+	if camera then
+		local viewport = camera.ViewportSize
+		shopScale.Scale = math.clamp(math.min(viewport.X / 480, viewport.Y / 520), 0.5, 1)
+	end
+end
+
+shopButton.Activated:Connect(function()
+	fitShopToScreen()
+	shopPanel.Visible = not shopPanel.Visible
+end)
+closeButton.Activated:Connect(function()
+	shopPanel.Visible = false
+end)
 ]]></string>
         </Properties>
       </Item>
     </Item>
   </Item>
-  <Item class="Workspace" referent="20">
+  <Item class="Workspace" referent="21">
     <Properties>
       <string name="Name">Workspace</string>
       <bool name="NeedsPivotMigration">false</bool>

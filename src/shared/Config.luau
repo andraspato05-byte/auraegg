@@ -40,6 +40,27 @@ Config.BatKnockback = 55
 Config.DataStoreName = "StealTheAuraEgg_v1"
 Config.AutosaveInterval = 120
 
+-- Robux shop -------------------------------------------------------------------
+-- Create these on the Creator Dashboard (create.roblox.com > your game >
+-- Monetization > Passes / Developer Products) and paste each ID below.
+-- An item with Id = 0 shows as "Not set up" in the shop and can't be bought.
+Config.GamePasses = {
+	{ Key = "DoubleCash", Id = 0, Name = "2x Cash", Description = "Every egg on your base makes double cash." },
+	{ Key = "FastCarry", Id = 0, Name = "Speedy Thief", Description = "No slowdown while carrying a stolen egg." },
+	{ Key = "LongLock", Id = 0, Name = "Mega Lock", Description = "Your base stays locked twice as long." },
+}
+
+Config.Products = {
+	{ Key = "CashSmall", Id = 0, Name = "Pile of Cash", Cash = 10000 },
+	{ Key = "CashMedium", Id = 0, Name = "Bag of Cash", Cash = 250000 },
+	{ Key = "CashLarge", Id = 0, Name = "Vault of Cash", Cash = 5000000 },
+	{ Key = "LuckyEgg", Id = 0, Name = "Lucky Aura Egg", LuckyEgg = true },
+}
+
+Config.LuckyEggMinRarity = 5 -- Lucky Aura Egg gives Legendary (5) or better
+Config.DoubleCashMultiplier = 2
+Config.LongLockMultiplier = 2
+
 -- Rarities (Weight = how often this rarity appears on the belt) -------------
 Config.Rarities = {
 	{ Name = "Common", Color = Color3.fromRGB(200, 200, 200), Weight = 50 },
@@ -137,10 +158,12 @@ function Config.GetRarity(rarityName)
 end
 
 -- Picks a random egg id using the rarity weights.
-function Config.RollEggId(rng)
+-- minRarityIndex (optional) skips rarities below it, e.g. 5 = Legendary or better.
+function Config.RollEggId(rng, minRarityIndex)
+	local minIndex = minRarityIndex or 1
 	local total = 0
 	for _, rarity in Config.Rarities do
-		if Config.EggsByRarity[rarity.Name] then
+		if rarity.Index >= minIndex and Config.EggsByRarity[rarity.Name] then
 			total += rarity.Weight
 		end
 	end
@@ -148,7 +171,7 @@ function Config.RollEggId(rng)
 	local roll = rng:NextNumber() * total
 	for _, rarity in Config.Rarities do
 		local list = Config.EggsByRarity[rarity.Name]
-		if list then
+		if rarity.Index >= minIndex and list then
 			roll -= rarity.Weight
 			if roll <= 0 then
 				return list[rng:NextInteger(1, #list)].Id
@@ -156,6 +179,13 @@ function Config.RollEggId(rng)
 		end
 	end
 
+	-- floating point leftovers: return the last eligible egg
+	for index = #Config.Eggs, 1, -1 do
+		local egg = Config.Eggs[index]
+		if Config.GetRarity(egg.Rarity).Index >= minIndex then
+			return egg.Id
+		end
+	end
 	return Config.Eggs[1].Id
 end
 

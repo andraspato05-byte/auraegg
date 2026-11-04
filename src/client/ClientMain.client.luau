@@ -122,7 +122,7 @@ local tips = Instance.new("TextLabel")
 tips.Name = "HowToPlay"
 tips.AnchorPoint = Vector2.new(0, 1)
 tips.Position = UDim2.new(0, 12, 1, -12)
-tips.Size = UDim2.new(0, 330, 0, 150)
+tips.Size = UDim2.new(0, 330, 0, 168)
 tips.BackgroundColor3 = Color3.fromRGB(30, 20, 50)
 tips.BackgroundTransparency = 0.25
 tips.Font = Enum.Font.GothamMedium
@@ -137,7 +137,8 @@ tips.Text = "HOW TO PLAY\n"
 	.. "- Stand on the green pads to collect the cash\n"
 	.. "- Steal eggs from other bases (hold E) and run home\n"
 	.. "- Bonk thieves with your Aura Bat to get eggs back\n"
-	.. "- Stand on the red pad to lock your base"
+	.. "- Stand on the red pad to lock your base\n"
+	.. "- Press SHOP for Robux boosts"
 tips.Parent = screenGui
 addCorner(tips, 10)
 local tipsPadding = Instance.new("UIPadding")
@@ -312,4 +313,212 @@ knockbackEvent.OnClientEvent:Connect(function(velocity)
 			humanoid.PlatformStand = false
 		end
 	end)
+end)
+
+------------------------------------------------------------------------------
+-- Robux shop
+------------------------------------------------------------------------------
+
+local MarketplaceService = game:GetService("MarketplaceService")
+
+local function showLocalNotice(text)
+	-- reuse the server notification look for local messages
+	local label = newLabel(notifyHolder, "Notification", text, UDim2.new(1, 0, 0, 32), UDim2.new(), Color3.fromRGB(255, 150, 40))
+	notifyCount += 1
+	label.LayoutOrder = notifyCount
+	label.BackgroundColor3 = Color3.fromRGB(20, 15, 35)
+	label.BackgroundTransparency = 0.3
+	addCorner(label, 8)
+	task.delay(4, function()
+		if label.Parent then
+			label:Destroy()
+		end
+	end)
+end
+
+local shopButton = Instance.new("TextButton")
+shopButton.Name = "ShopButton"
+shopButton.AnchorPoint = Vector2.new(0, 0.5)
+shopButton.Position = UDim2.new(0, 12, 0.5, 0)
+shopButton.Size = UDim2.new(0, 110, 0, 46)
+shopButton.BackgroundColor3 = Color3.fromRGB(255, 190, 40)
+shopButton.Font = Enum.Font.FredokaOne
+shopButton.TextScaled = true
+shopButton.Text = "SHOP"
+shopButton.TextColor3 = Color3.fromRGB(60, 30, 0)
+shopButton.Parent = screenGui
+addCorner(shopButton, 12)
+addStroke(shopButton, Color3.fromRGB(120, 70, 0), 2)
+
+local shopPanel = Instance.new("Frame")
+shopPanel.Name = "ShopPanel"
+shopPanel.AnchorPoint = Vector2.new(0.5, 0.5)
+shopPanel.Position = UDim2.new(0.5, 0, 0.5, 0)
+shopPanel.Size = UDim2.new(0, 440, 0, 470)
+shopPanel.BackgroundColor3 = Color3.fromRGB(30, 20, 50)
+shopPanel.Visible = false
+shopPanel.ZIndex = 5
+shopPanel.Parent = screenGui
+addCorner(shopPanel, 16)
+addStroke(shopPanel, Color3.fromRGB(255, 190, 40), 3)
+
+local shopSizeLimit = Instance.new("UISizeConstraint")
+shopSizeLimit.MaxSize = Vector2.new(440, 470)
+shopSizeLimit.Parent = shopPanel
+local shopScale = Instance.new("UIScale") -- shrink on small (phone) screens
+shopScale.Parent = shopPanel
+
+local shopTitle = newLabel(shopPanel, "Title", "AURA SHOP", UDim2.new(1, -70, 0, 40), UDim2.new(0, 16, 0, 10), Color3.fromRGB(255, 210, 80))
+shopTitle.TextXAlignment = Enum.TextXAlignment.Left
+shopTitle.ZIndex = 6
+
+local closeButton = Instance.new("TextButton")
+closeButton.Name = "Close"
+closeButton.AnchorPoint = Vector2.new(1, 0)
+closeButton.Position = UDim2.new(1, -12, 0, 12)
+closeButton.Size = UDim2.new(0, 36, 0, 36)
+closeButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+closeButton.Font = Enum.Font.FredokaOne
+closeButton.TextScaled = true
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.ZIndex = 6
+closeButton.Parent = shopPanel
+addCorner(closeButton, 8)
+
+local shopList = Instance.new("ScrollingFrame")
+shopList.Name = "Items"
+shopList.Position = UDim2.new(0, 12, 0, 60)
+shopList.Size = UDim2.new(1, -24, 1, -72)
+shopList.BackgroundTransparency = 1
+shopList.BorderSizePixel = 0
+shopList.ScrollBarThickness = 6
+shopList.CanvasSize = UDim2.new(0, 0, 0, 0)
+shopList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+shopList.ZIndex = 6
+shopList.Parent = shopPanel
+
+local shopLayout = Instance.new("UIListLayout")
+shopLayout.SortOrder = Enum.SortOrder.LayoutOrder
+shopLayout.Padding = UDim.new(0, 8)
+shopLayout.Parent = shopList
+
+local itemCount = 0
+
+local function addSectionHeader(text)
+	itemCount += 1
+	local header = newLabel(shopList, "Header", text, UDim2.new(1, -8, 0, 26), UDim2.new(), Color3.fromRGB(200, 160, 255))
+	header.TextXAlignment = Enum.TextXAlignment.Left
+	header.LayoutOrder = itemCount
+	header.ZIndex = 7
+end
+
+-- Builds one shop row. Returns the buy button.
+local function addItem(name, description, infoType, id)
+	itemCount += 1
+	local row = Instance.new("Frame")
+	row.Name = name
+	row.Size = UDim2.new(1, -8, 0, 72)
+	row.BackgroundColor3 = Color3.fromRGB(50, 35, 80)
+	row.LayoutOrder = itemCount
+	row.ZIndex = 7
+	row.Parent = shopList
+	addCorner(row, 10)
+
+	local nameLabel = newLabel(row, "Name", name, UDim2.new(0.62, -12, 0, 30), UDim2.new(0, 12, 0, 6), Color3.fromRGB(255, 255, 255))
+	nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+	nameLabel.ZIndex = 8
+
+	local descLabel = newLabel(row, "Description", description, UDim2.new(0.62, -12, 0, 26), UDim2.new(0, 12, 0, 38), Color3.fromRGB(200, 200, 220))
+	descLabel.TextXAlignment = Enum.TextXAlignment.Left
+	descLabel.Font = Enum.Font.GothamMedium
+	descLabel.ZIndex = 8
+
+	local buy = Instance.new("TextButton")
+	buy.Name = "Buy"
+	buy.AnchorPoint = Vector2.new(1, 0.5)
+	buy.Position = UDim2.new(1, -10, 0.5, 0)
+	buy.Size = UDim2.new(0.34, 0, 0, 46)
+	buy.Font = Enum.Font.FredokaOne
+	buy.TextScaled = true
+	buy.TextColor3 = Color3.fromRGB(255, 255, 255)
+	buy.ZIndex = 8
+	buy.Parent = row
+	addCorner(buy, 10)
+
+	if id == 0 then
+		buy.Text = "Not set up"
+		buy.BackgroundColor3 = Color3.fromRGB(90, 90, 100)
+	else
+		buy.Text = "BUY"
+		buy.BackgroundColor3 = Color3.fromRGB(60, 190, 90)
+		-- show the real Robux price
+		task.spawn(function()
+			local ok, info = pcall(function()
+				return MarketplaceService:GetProductInfoAsync(id, infoType)
+			end)
+			if ok and type(info) == "table" and type(info.PriceInRobux) == "number" and buy.Text == "BUY" then
+				buy.Text = "R$ " .. info.PriceInRobux
+			end
+		end)
+	end
+	return buy
+end
+
+addSectionHeader("GAME PASSES (forever)")
+for _, pass in Config.GamePasses do
+	local buy = addItem(pass.Name, pass.Description, Enum.InfoType.GamePass, pass.Id)
+	local attribute = "Pass_" .. pass.Key
+	local function refreshOwned()
+		if player:GetAttribute(attribute) == true then
+			buy.Text = "OWNED"
+			buy.BackgroundColor3 = Color3.fromRGB(110, 80, 160)
+		end
+	end
+	player:GetAttributeChangedSignal(attribute):Connect(refreshOwned)
+	refreshOwned()
+
+	buy.Activated:Connect(function()
+		if pass.Id == 0 then
+			showLocalNotice("This pass isn't set up yet (missing ID in Config).")
+		elseif player:GetAttribute(attribute) ~= true then
+			MarketplaceService:PromptGamePassPurchase(player, pass.Id)
+		end
+	end)
+end
+
+addSectionHeader("ITEMS")
+for _, product in Config.Products do
+	local description
+	if product.Cash then
+		description = "Get " .. Config.FormatCash(product.Cash) .. " cash instantly"
+	elseif product.LuckyEgg then
+		description = "A random Legendary, Mythic or Secret egg!"
+	else
+		description = ""
+	end
+	local buy = addItem(product.Name, description, Enum.InfoType.Product, product.Id)
+	buy.Activated:Connect(function()
+		if product.Id == 0 then
+			showLocalNotice("This item isn't set up yet (missing ID in Config).")
+		else
+			MarketplaceService:PromptProductPurchase(player, product.Id)
+		end
+	end)
+end
+
+local function fitShopToScreen()
+	local camera = workspace.CurrentCamera
+	if camera then
+		local viewport = camera.ViewportSize
+		shopScale.Scale = math.clamp(math.min(viewport.X / 480, viewport.Y / 520), 0.5, 1)
+	end
+end
+
+shopButton.Activated:Connect(function()
+	fitShopToScreen()
+	shopPanel.Visible = not shopPanel.Visible
+end)
+closeButton.Activated:Connect(function()
+	shopPanel.Visible = false
 end)

@@ -90,6 +90,21 @@ local function findFreeSlot(plot)
 	return nil
 end
 
+-- Game pass effects. The attributes are set only by MonetizationService on the
+-- server (attributes a client sets on itself do not replicate), so they can be trusted.
+local function cashMultiplier(player)
+	return (player and player:GetAttribute("Pass_DoubleCash") == true) and Config.DoubleCashMultiplier or 1
+end
+
+local function carrySpeedFor(player)
+	return player:GetAttribute("Pass_FastCarry") == true and Config.NormalWalkSpeed or Config.CarryWalkSpeed
+end
+
+local function lockDurationFor(player)
+	return (player and player:GetAttribute("Pass_LongLock") == true) and Config.LockDuration * Config.LongLockMultiplier
+		or Config.LockDuration
+end
+
 local function getIncome(plot)
 	local total = 0
 	for _, slot in plot.Slots do
@@ -100,7 +115,7 @@ local function getIncome(plot)
 			end
 		end
 	end
-	return total
+	return total * cashMultiplier(plot.Owner)
 end
 
 local function updateIncomeAttribute(plot)
@@ -241,7 +256,8 @@ end
 ------------------------------------------------------------------------------
 
 local function lockPlot(plot, now)
-	plot.LockedUntil = now + Config.LockDuration
+	local duration = lockDurationFor(plot.Owner)
+	plot.LockedUntil = now + duration
 	setBarrier(plot, true)
 	updateLockLabel(plot, now)
 
@@ -262,7 +278,7 @@ local function lockPlot(plot, now)
 		end
 	end
 
-	Remotes.Notify(plot.Owner, "Base locked for " .. Config.LockDuration .. " seconds!", COLOR_GOOD)
+	Remotes.Notify(plot.Owner, "Base locked for " .. duration .. " seconds!", COLOR_GOOD)
 end
 
 local function unlockPlot(plot, now)
@@ -473,6 +489,7 @@ function PlotService.TrySteal(thief, plot, slotIndex)
 
 	-- Shortest legal time to walk home, used to reject teleporting thieves.
 	local now = time()
+	local carrySpeed = carrySpeedFor(thief)
 	local homeOffset = thiefPlot.Info.CFrame.Position - root.Position
 	local homeDistance = Vector3.new(homeOffset.X, 0, homeOffset.Z).Magnitude
 	local walkDistance = math.max(0, homeDistance - thiefPlot.Info.HalfSize * 1.5)
@@ -483,11 +500,12 @@ function PlotService.TrySteal(thief, plot, slotIndex)
 		EggId = eggId,
 		Model = createCarryModel(thief, eggId, root),
 		StartTime = now,
-		MinTime = walkDistance / (Config.CarryWalkSpeed * MOVE_SLACK_MULTIPLIER),
+		MinTime = walkDistance / (carrySpeed * MOVE_SLACK_MULTIPLIER),
+		Speed = carrySpeed,
 		LastPos = root.Position,
 		LastMoveTime = now,
 	}
-	humanoid.WalkSpeed = Config.CarryWalkSpeed
+	humanoid.WalkSpeed = carrySpeed
 	thief:SetAttribute("CarryingEgg", def.Name)
 
 	Remotes.Notify(thief, "You grabbed the " .. def.Name .. "! Run back to your base!", COLOR_INFO)
@@ -740,7 +758,7 @@ local function tickSecond()
 				if slot.EggId and not slot.StolenBy then
 					local def = Config.GetEgg(slot.EggId)
 					if def then
-						slot.Pending += def.Income
+						slot.Pending += def.Income * cashMultiplier(plot.Owner)
 					end
 				end
 				updatePadLabel(plot, slotIndex)
@@ -774,7 +792,7 @@ local function tickFast()
 				local moved = Vector3.new(position.X - carry.LastPos.X, 0, position.Z - carry.LastPos.Z).Magnitude
 				-- Measure from the last time they moved, so a laggy player whose
 				-- position arrives in one burst isn't punished.
-				local allowed = Config.CarryWalkSpeed * (now - carry.LastMoveTime) * MOVE_SLACK_MULTIPLIER
+				local allowed = carry.Speed * (now - carry.LastMoveTime) * MOVE_SLACK_MULTIPLIER
 					+ MOVE_SLACK_STUDS
 				if moved > allowed then
 					PlotService.CancelCarry(thief, "You moved too fast and dropped the egg!")

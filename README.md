@@ -28,6 +28,24 @@ A Roblox game in the "steal a ___" style. Buy glowing **Aura Eggs** off the conv
 
 A thief who dies, gets bonked, or leaves the game drops the egg, and it goes back to its owner's pedestal. Carrying an egg slows you down.
 
+## Robux shop (game passes and developer products)
+
+Press **SHOP** on the left side of the screen. Nothing can be bought until you add your own IDs:
+
+1. Publish the game, then go to **create.roblox.com > your game > Monetization**.
+2. Under **Passes**, create the 3 game passes. Under **Developer Products**, create the 4 products. Set a Robux price for each.
+3. Copy each ID into `src/shared/Config.luau` (in Studio: `ReplicatedStorage > Shared > Config`), replacing the `Id = 0` values.
+
+| Type | Name | What it does |
+| --- | --- | --- |
+| Game pass | 2x Cash | Every egg on your base makes double cash |
+| Game pass | Speedy Thief | No slowdown while carrying a stolen egg |
+| Game pass | Mega Lock | Base lock lasts 120 s instead of 60 s |
+| Product | Pile / Bag / Vault of Cash | +$10K / +$250K / +$5M |
+| Product | Lucky Aura Egg | A random Legendary, Mythic or Secret egg (its price in cash if your base is full) |
+
+Items with `Id = 0` show "Not set up" in the shop. Purchases are granted with Roblox's recommended receipt handling (each purchase is recorded, so it's never given twice and never lost).
+
 ## The Aura Eggs
 
 | Rarity | Eggs | Price | Cash/sec |
@@ -55,6 +73,7 @@ src/server/MapBuilder.luau    Builds the map and the 8 bases
 src/server/PlotService.luau   Bases, income, pads, lock, stealing, selling
 src/server/ConveyorService.luau  Egg belt + buying
 src/server/BatService.luau    The Aura Bat
+src/server/MonetizationService.luau  Game passes + developer products (Robux)
 src/server/EggVisuals.luau    Egg models, auras, particles, name tags
 src/server/DataManager.luau   Saving and loading (DataStoreService)
 src/server/Session.luau       Cash / steals + leaderstats

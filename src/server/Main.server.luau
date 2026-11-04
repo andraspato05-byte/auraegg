@@ -18,6 +18,7 @@ local DataManager = require(Server.DataManager)
 local PlotService = require(Server.PlotService)
 local ConveyorService = require(Server.ConveyorService)
 local BatService = require(Server.BatService)
+local MonetizationService = require(Server.MonetizationService)
 
 ------------------------------------------------------------------------------
 -- World setup
@@ -39,6 +40,7 @@ local world = MapBuilder.Build()
 PlotService.Init(world.Plots)
 ConveyorService.Init(world.Belt)
 BatService.Init()
+MonetizationService.Init()
 
 ------------------------------------------------------------------------------
 -- Players
@@ -85,6 +87,7 @@ local function onPlayerAdded(player)
 		return -- already handled
 	end
 	local session = Session.Create(player)
+	task.spawn(MonetizationService.LoadPasses, player)
 
 	local plot = PlotService.AssignPlot(player)
 
