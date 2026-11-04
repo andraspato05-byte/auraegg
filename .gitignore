@@ -4,3 +4,5 @@
 sourcemap.json
 roblox.yml
 .DS_Store
+.cache/
+.tools/

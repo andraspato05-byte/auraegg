@@ -18,6 +18,7 @@ local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Co
 local Session = require(script.Parent.Session)
 local Remotes = require(script.Parent.Remotes)
 local PlotService = require(script.Parent.PlotService)
+local BatService = require(script.Parent.BatService)
 
 local SizeService = {}
 
@@ -25,7 +26,10 @@ local COLOR_MOG = Color3.fromRGB(255, 90, 160)
 local COLOR_BAD = Color3.fromRGB(255, 90, 90)
 local TICK = 0.5
 
+local ATTEMPT_THROTTLE = 0.4 -- seconds between MOG requests (stops remote spam)
+
 local lastMog = {} -- [Player] = time of their last MOG
+local lastAttempt = {} -- [Player] = time of their last MOG request
 local immuneUntil = {} -- [Player] = time until they can be mogged again
 
 local function targetScale(player)
@@ -45,6 +49,10 @@ end
 local function applyScale(player, scale)
 	local character = living(player)
 	if not character then
+		return
+	end
+	-- Wait until hats, hair and clothes are on, or they would keep their normal size.
+	if not player:HasAppearanceLoaded() then
 		return
 	end
 	local ok, current = pcall(function()
@@ -67,6 +75,14 @@ local function applyScale(player, scale)
 	PlotService.UpdateCarryOffset(player)
 end
 
+-- Keeps the Aura Bat the same size as its owner.
+local function matchBat(player, scale)
+	local character = player.Character
+	if character and player:HasAppearanceLoaded() then
+		BatService.MatchScale(player, scale)
+	end
+end
+
 -- Recalculates and applies the player's size right away.
 function SizeService.Refresh(player)
 	local session = Session.Get(player)
@@ -77,6 +93,7 @@ function SizeService.Refresh(player)
 	player:SetAttribute("Size", scale)
 	session.SizeValue.Value = math.floor(scale * 100 + 0.5)
 	applyScale(player, scale)
+	matchBat(player, scale)
 end
 
 local function onMog(player, target)
@@ -93,6 +110,10 @@ local function onMog(player, target)
 	end
 
 	local now = time()
+	if now - (lastAttempt[player] or -math.huge) < ATTEMPT_THROTTLE then
+		return
+	end
+	lastAttempt[player] = now
 	if now - (lastMog[player] or -math.huge) < Config.MogCooldown then
 		return
 	end
@@ -120,6 +141,8 @@ local function onMog(player, target)
 
 	lastMog[player] = now
 	immuneUntil[target] = now + Config.MogImmunity
+	-- tell the client when it can MOG again (server clock)
+	player:SetAttribute("MogReadyAt", workspace:GetServerTimeNow() + Config.MogCooldown)
 
 	local flat = Vector3.new(offset.X, 0, offset.Z)
 	local direction = flat.Magnitude > 0.05 and flat.Unit or myRoot.CFrame.LookVector
@@ -128,10 +151,15 @@ local function onMog(player, target)
 	end
 	Remotes.Knockback(target, direction * 70 + Vector3.new(0, 45, 0))
 
-	local reward = math.max(Config.MogMinReward, math.floor((target:GetAttribute("Income") or 0) * Config.MogRewardSeconds))
-	Session.AddCash(player, reward)
+	-- The reward is taken from the target (a transfer, not new money), so it can't be farmed.
+	local wanted = math.max(Config.MogMinReward, math.floor((target:GetAttribute("Income") or 0) * Config.MogRewardSeconds))
+	local reward = math.min(wanted, theirSession.Cash)
+	if reward > 0 then
+		Session.AddCash(target, -reward)
+		Session.AddCash(player, reward)
+	end
 	Remotes.Notify(player, "You SIZE MOGGED " .. target.DisplayName .. "! +" .. Config.FormatCash(reward), COLOR_MOG)
-	Remotes.Notify(target, player.DisplayName .. " SIZE MOGGED you!", COLOR_BAD)
+	Remotes.Notify(target, player.DisplayName .. " SIZE MOGGED you! -" .. Config.FormatCash(reward), COLOR_BAD)
 end
 
 function SizeService.Init()
@@ -139,6 +167,7 @@ function SizeService.Init()
 
 	Players.PlayerRemoving:Connect(function(player)
 		lastMog[player] = nil
+		lastAttempt[player] = nil
 		immuneUntil[player] = nil
 	end)
 

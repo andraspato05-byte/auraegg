@@ -80,6 +80,7 @@ local function sanitize(raw)
 	if isValidCount(raw.BaseLevel) then
 		data.BaseLevel = math.clamp(math.floor(raw.BaseLevel), 1, #Config.BaseUpgrades)
 	end
+
 	if isValidCount(raw.Speed) then
 		data.Speed = math.min(raw.Speed, Config.MaxSpeed)
 	end
@@ -90,6 +91,20 @@ local function sanitize(raw)
 			local eggId, mutationName, hatched, hatchLeft = Config.DecodeEgg(saved)
 			if index and index == math.floor(index) and index >= 1 and index <= Config.SlotsPerPlot and eggId then
 				data.Eggs[index] = Config.EncodeEgg(eggId, mutationName, hatched, hatchLeft)
+			end
+		end
+	end
+
+	-- Saves from before base upgrades existed: keep every pedestal that already holds an egg.
+	if raw.BaseLevel == nil then
+		local highest = 0
+		for index in data.Eggs do
+			highest = math.max(highest, index)
+		end
+		for level, upgrade in Config.BaseUpgrades do
+			if upgrade.Slots >= highest then
+				data.BaseLevel = math.max(data.BaseLevel, level)
+				break
 			end
 		end
 	end
@@ -107,6 +122,9 @@ local function isLockedByOtherServer(record)
 	end
 	return type(lock.Time) == "number" and os.time() - lock.Time < LOCK_STALE_SECONDS
 end
+
+-- Exposed for the automated tests (tests/specs/data.spec.luau).
+DataManager._Sanitize = sanitize
 
 function DataManager.IsAvailable()
 	return store ~= nil

@@ -516,10 +516,17 @@ local function findMogTarget()
 	return best
 end
 
+-- The server sets "MogReadyAt" (server clock) after a successful MOG.
+local function mogCooldownLeft()
+	local readyAt = player:GetAttribute("MogReadyAt")
+	local serverLeft = type(readyAt) == "number" and readyAt - workspace:GetServerTimeNow() or 0
+	return math.max(serverLeft, mogReadyAt - os.clock())
+end
+
 local function tryMog()
-	if mogTarget and mogTarget.Parent == Players and os.clock() >= mogReadyAt then
+	if mogTarget and mogTarget.Parent == Players and mogCooldownLeft() <= 0 then
 		mogRemote:FireServer(mogTarget)
-		mogReadyAt = os.clock() + Config.MogCooldown
+		mogReadyAt = os.clock() + 0.5 -- short local debounce; the server decides the real cooldown
 	end
 end
 
@@ -527,7 +534,7 @@ task.spawn(function()
 	while true do
 		mogTarget = findMogTarget()
 		if mogTarget then
-			local remaining = mogReadyAt - os.clock()
+			local remaining = mogCooldownLeft()
 			mogButton.Visible = true
 			if remaining > 0 then
 				mogButton.Text = "MOG in " .. math.ceil(remaining) .. "s"

@@ -483,24 +483,32 @@ local PlotService = require(script.Parent.PlotService)
 
 local BatService = {}
 
-local REST_GRIP = CFrame.new(0, 0, 1.6) -- hold the bat near its back end
-local SWING_GRIP = CFrame.new(0, 0, 1.6) * CFrame.Angles(math.rad(-75), 0, 0)
+local GRIP_DISTANCE = 1.6 -- hold the bat near its back end (studs at normal size)
+
+local function restGrip(scale)
+	return CFrame.new(0, 0, GRIP_DISTANCE * scale)
+end
+
+local function swingGrip(scale)
+	return CFrame.new(0, 0, GRIP_DISTANCE * scale) * CFrame.Angles(math.rad(-75), 0, 0)
+end
 
 local template = nil
 local lastSwing = {} -- [Player] = time of last swing
 local hookedTools = setmetatable({}, { __mode = "k" })
 
-local function buildBat()
+local function buildBat(scale)
 	local tool = Instance.new("Tool")
+	tool:SetAttribute("Scale", scale)
 	tool.Name = Config.BatName
 	tool.ToolTip = "Bonk thieves to make them drop your egg!"
 	tool.CanBeDropped = false
 	tool.RequiresHandle = true
-	tool.Grip = REST_GRIP
+	tool.Grip = restGrip(scale)
 
 	local handle = Instance.new("Part")
 	handle.Name = "Handle"
-	handle.Size = Vector3.new(0.7, 0.7, 4.6)
+	handle.Size = Vector3.new(0.7, 0.7, 4.6) * scale
 	handle.Color = Color3.fromRGB(125, 85, 50)
 	handle.Material = Enum.Material.Wood
 	handle.CanCollide = false
@@ -512,7 +520,7 @@ local function buildBat()
 
 	local tip = Instance.new("Part")
 	tip.Name = "AuraTip"
-	tip.Size = Vector3.new(1, 1, 1.6)
+	tip.Size = Vector3.new(1, 1, 1.6) * scale
 	tip.Color = Color3.fromRGB(120, 220, 255)
 	tip.Material = Enum.Material.Neon
 	tip.CanCollide = false
@@ -521,7 +529,7 @@ local function buildBat()
 	tip.Massless = true
 	tip.TopSurface = Enum.SurfaceType.Smooth
 	tip.BottomSurface = Enum.SurfaceType.Smooth
-	tip.CFrame = handle.CFrame * CFrame.new(0, 0, -1.9) -- the far end, away from the hand
+	tip.CFrame = handle.CFrame * CFrame.new(0, 0, -1.9 * scale) -- the far end, away from the hand
 	tip.Parent = tool
 
 	local tipWeld = Instance.new("WeldConstraint")
@@ -573,14 +581,16 @@ local function swing(player, tool)
 		sound:Play()
 	end
 
-	tool.Grip = SWING_GRIP
+	local scale = tool:GetAttribute("Scale") or 1
+	tool.Grip = swingGrip(scale)
 	task.delay(0.25, function()
 		if tool.Parent then
-			tool.Grip = REST_GRIP
+			tool.Grip = restGrip(scale)
 		end
 	end)
 
 	local look = root.CFrame.LookVector
+	local reach = Config.BatRange * scale
 	for _, other in Players:GetPlayers() do
 		if other ~= player then
 			local _, otherRoot = getLiving(other)
@@ -588,7 +598,7 @@ local function swing(player, tool)
 				local offset = otherRoot.Position - root.Position
 				local distance = offset.Magnitude
 				local flat = Vector3.new(offset.X, 0, offset.Z)
-				if distance <= Config.BatRange then
+				if distance <= reach then
 					-- must be roughly in front of the swinger (or right on top of them)
 					local inFront = flat.Magnitude < 1 or look:Dot(flat.Unit) > 0.1
 					if inFront then
@@ -620,7 +630,7 @@ local function hasBat(player)
 end
 
 function BatService.Init()
-	template = buildBat()
+	template = buildBat(1)
 	template.Parent = StarterPack -- everyone gets a copy each time they spawn
 end
 
@@ -646,6 +656,33 @@ function BatService.EnsureBat(player)
 	local backpack = player:FindFirstChildOfClass("Backpack")
 	if backpack then
 		template:Clone().Parent = backpack
+	end
+end
+
+-- Swaps the player's bat for one built at `scale` when their size changed.
+function BatService.MatchScale(player, scale)
+	local backpack = player:FindFirstChildOfClass("Backpack")
+	local character = player.Character
+	local current = (character and character:FindFirstChild(Config.BatName))
+		or (backpack and backpack:FindFirstChild(Config.BatName))
+	if not current or not current:IsA("Tool") then
+		return
+	end
+	if math.abs((current:GetAttribute("Scale") or 1) - scale) < 0.01 then
+		return
+	end
+
+	local equipped = character ~= nil and current.Parent == character
+	local replacement = buildBat(scale)
+	current:Destroy()
+	if equipped then
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		replacement.Parent = backpack or character
+		if humanoid then
+			humanoid:EquipTool(replacement)
+		end
+	elseif backpack then
+		replacement.Parent = backpack
 	end
 end
 
@@ -923,6 +960,7 @@ local function sanitize(raw)
 	if isValidCount(raw.BaseLevel) then
 		data.BaseLevel = math.clamp(math.floor(raw.BaseLevel), 1, #Config.BaseUpgrades)
 	end
+
 	if isValidCount(raw.Speed) then
 		data.Speed = math.min(raw.Speed, Config.MaxSpeed)
 	end
@@ -933,6 +971,20 @@ local function sanitize(raw)
 			local eggId, mutationName, hatched, hatchLeft = Config.DecodeEgg(saved)
 			if index and index == math.floor(index) and index >= 1 and index <= Config.SlotsPerPlot and eggId then
 				data.Eggs[index] = Config.EncodeEgg(eggId, mutationName, hatched, hatchLeft)
+			end
+		end
+	end
+
+	-- Saves from before base upgrades existed: keep every pedestal that already holds an egg.
+	if raw.BaseLevel == nil then
+		local highest = 0
+		for index in data.Eggs do
+			highest = math.max(highest, index)
+		end
+		for level, upgrade in Config.BaseUpgrades do
+			if upgrade.Slots >= highest then
+				data.BaseLevel = math.max(data.BaseLevel, level)
+				break
 			end
 		end
 	end
@@ -950,6 +1002,9 @@ local function isLockedByOtherServer(record)
 	end
 	return type(lock.Time) == "number" and os.time() - lock.Time < LOCK_STALE_SECONDS
 end
+
+-- Exposed for the automated tests (tests/specs/data.spec.luau).
+DataManager._Sanitize = sanitize
 
 function DataManager.IsAvailable()
 	return store ~= nil
@@ -1683,6 +1738,7 @@ local function onPlayerAdded(player)
 	Session.SetCash(player, data.Cash)
 	Session.SetSteals(player, data.Steals)
 	Session.SetSpeed(player, data.Speed)
+	session.BaseLevel = data.BaseLevel -- before LoadEggs, which refreshes the base
 	PlotService.RefreshWalkSpeed(player)
 	if PlotService.GetPlot(player) then
 		PlotService.LoadEggs(player, data.Eggs)
@@ -3598,14 +3654,14 @@ local function tickFast()
 				local localPos = plot.Info.CFrame:PointToObjectSpace(root.Position)
 				if localPos.Y > -2 and localPos.Y < 10 then
 					for slotIndex, slotInfo in plot.Info.Slots do
-						local pad = slotInfo.PadLocal
-						if math.abs(localPos.X - pad.X) <= 2.6 and math.abs(localPos.Z - pad.Z) <= 2.6 then
+						local padPos = slotInfo.PadLocal
+						if math.abs(localPos.X - padPos.X) <= 2.6 and math.abs(localPos.Z - padPos.Z) <= 2.6 then
 							collectSlot(plot, slotIndex)
 						end
 					end
 
-					local lockPad = plot.Info.LockPadLocal
-					if math.abs(localPos.X - lockPad.X) <= 3.6 and math.abs(localPos.Z - lockPad.Z) <= 2.6 then
+					local lockPadPos = plot.Info.LockPadLocal
+					if math.abs(localPos.X - lockPadPos.X) <= 3.6 and math.abs(localPos.Z - lockPadPos.Z) <= 2.6 then
 						if plot.LockedUntil == 0 and now >= plot.CooldownUntil then
 							lockPlot(plot, now)
 						end
@@ -3936,6 +3992,7 @@ local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Co
 local Session = require(script.Parent.Session)
 local Remotes = require(script.Parent.Remotes)
 local PlotService = require(script.Parent.PlotService)
+local BatService = require(script.Parent.BatService)
 
 local SizeService = {}
 
@@ -3943,7 +4000,10 @@ local COLOR_MOG = Color3.fromRGB(255, 90, 160)
 local COLOR_BAD = Color3.fromRGB(255, 90, 90)
 local TICK = 0.5
 
+local ATTEMPT_THROTTLE = 0.4 -- seconds between MOG requests (stops remote spam)
+
 local lastMog = {} -- [Player] = time of their last MOG
+local lastAttempt = {} -- [Player] = time of their last MOG request
 local immuneUntil = {} -- [Player] = time until they can be mogged again
 
 local function targetScale(player)
@@ -3963,6 +4023,10 @@ end
 local function applyScale(player, scale)
 	local character = living(player)
 	if not character then
+		return
+	end
+	-- Wait until hats, hair and clothes are on, or they would keep their normal size.
+	if not player:HasAppearanceLoaded() then
 		return
 	end
 	local ok, current = pcall(function()
@@ -3985,6 +4049,14 @@ local function applyScale(player, scale)
 	PlotService.UpdateCarryOffset(player)
 end
 
+-- Keeps the Aura Bat the same size as its owner.
+local function matchBat(player, scale)
+	local character = player.Character
+	if character and player:HasAppearanceLoaded() then
+		BatService.MatchScale(player, scale)
+	end
+end
+
 -- Recalculates and applies the player's size right away.
 function SizeService.Refresh(player)
 	local session = Session.Get(player)
@@ -3995,6 +4067,7 @@ function SizeService.Refresh(player)
 	player:SetAttribute("Size", scale)
 	session.SizeValue.Value = math.floor(scale * 100 + 0.5)
 	applyScale(player, scale)
+	matchBat(player, scale)
 end
 
 local function onMog(player, target)
@@ -4011,6 +4084,10 @@ local function onMog(player, target)
 	end
 
 	local now = time()
+	if now - (lastAttempt[player] or -math.huge) < ATTEMPT_THROTTLE then
+		return
+	end
+	lastAttempt[player] = now
 	if now - (lastMog[player] or -math.huge) < Config.MogCooldown then
 		return
 	end
@@ -4038,6 +4115,8 @@ local function onMog(player, target)
 
 	lastMog[player] = now
 	immuneUntil[target] = now + Config.MogImmunity
+	-- tell the client when it can MOG again (server clock)
+	player:SetAttribute("MogReadyAt", workspace:GetServerTimeNow() + Config.MogCooldown)
 
 	local flat = Vector3.new(offset.X, 0, offset.Z)
 	local direction = flat.Magnitude > 0.05 and flat.Unit or myRoot.CFrame.LookVector
@@ -4046,10 +4125,15 @@ local function onMog(player, target)
 	end
 	Remotes.Knockback(target, direction * 70 + Vector3.new(0, 45, 0))
 
-	local reward = math.max(Config.MogMinReward, math.floor((target:GetAttribute("Income") or 0) * Config.MogRewardSeconds))
-	Session.AddCash(player, reward)
+	-- The reward is taken from the target (a transfer, not new money), so it can't be farmed.
+	local wanted = math.max(Config.MogMinReward, math.floor((target:GetAttribute("Income") or 0) * Config.MogRewardSeconds))
+	local reward = math.min(wanted, theirSession.Cash)
+	if reward > 0 then
+		Session.AddCash(target, -reward)
+		Session.AddCash(player, reward)
+	end
 	Remotes.Notify(player, "You SIZE MOGGED " .. target.DisplayName .. "! +" .. Config.FormatCash(reward), COLOR_MOG)
-	Remotes.Notify(target, player.DisplayName .. " SIZE MOGGED you!", COLOR_BAD)
+	Remotes.Notify(target, player.DisplayName .. " SIZE MOGGED you! -" .. Config.FormatCash(reward), COLOR_BAD)
 end
 
 function SizeService.Init()
@@ -4057,6 +4141,7 @@ function SizeService.Init()
 
 	Players.PlayerRemoving:Connect(function(player)
 		lastMog[player] = nil
+		lastAttempt[player] = nil
 		immuneUntil[player] = nil
 	end)
 
@@ -5927,10 +6012,17 @@ local function findMogTarget()
 	return best
 end
 
+-- The server sets "MogReadyAt" (server clock) after a successful MOG.
+local function mogCooldownLeft()
+	local readyAt = player:GetAttribute("MogReadyAt")
+	local serverLeft = type(readyAt) == "number" and readyAt - workspace:GetServerTimeNow() or 0
+	return math.max(serverLeft, mogReadyAt - os.clock())
+end
+
 local function tryMog()
-	if mogTarget and mogTarget.Parent == Players and os.clock() >= mogReadyAt then
+	if mogTarget and mogTarget.Parent == Players and mogCooldownLeft() <= 0 then
 		mogRemote:FireServer(mogTarget)
-		mogReadyAt = os.clock() + Config.MogCooldown
+		mogReadyAt = os.clock() + 0.5 -- short local debounce; the server decides the real cooldown
 	end
 end
 
@@ -5938,7 +6030,7 @@ task.spawn(function()
 	while true do
 		mogTarget = findMogTarget()
 		if mogTarget then
-			local remaining = mogReadyAt - os.clock()
+			local remaining = mogCooldownLeft()
 			mogButton.Visible = true
 			if remaining > 0 then
 				mogButton.Text = "MOG in " .. math.ceil(remaining) .. "s"

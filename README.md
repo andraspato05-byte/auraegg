@@ -169,6 +169,10 @@ You can decorate the map directly in Studio. The scripts find a few parts by nam
 
 The on-screen GUI is in `StarterGui > AuraEggHud`, so you can restyle it in Studio too. Keep the element names (CashPanel, ShopButton, ShopPanel, EventBanner, ...); the client script finds them by name.
 
+## Development workflow
+
+Run `tools/check.sh` before every commit: it regenerates the map and GUI, lints with selene, checks every Roblox API name against the official API dump, builds the place with Rojo and runs the automated Lune tests (`tests/`). GitHub Actions runs the same checks on every push and attaches the built place file. The full workflow, including the Studio playtest checklist, is in [docs/WORKFLOW.md](docs/WORKFLOW.md) (Hungarian).
+
 ## Working with Rojo (optional)
 
 If you want to edit the code in VS Code and sync it live into Studio:
@@ -183,4 +187,3 @@ Then connect with the Rojo Studio plugin. To rebuild the place file:
 rojo build default.project.json -o StealTheAuraEgg.rbxlx
 ```
 
-Lint with [selene](https://github.com/Kampfkarren/selene): `selene src`.

@@ -14,24 +14,32 @@ local PlotService = require(script.Parent.PlotService)
 
 local BatService = {}
 
-local REST_GRIP = CFrame.new(0, 0, 1.6) -- hold the bat near its back end
-local SWING_GRIP = CFrame.new(0, 0, 1.6) * CFrame.Angles(math.rad(-75), 0, 0)
+local GRIP_DISTANCE = 1.6 -- hold the bat near its back end (studs at normal size)
+
+local function restGrip(scale)
+	return CFrame.new(0, 0, GRIP_DISTANCE * scale)
+end
+
+local function swingGrip(scale)
+	return CFrame.new(0, 0, GRIP_DISTANCE * scale) * CFrame.Angles(math.rad(-75), 0, 0)
+end
 
 local template = nil
 local lastSwing = {} -- [Player] = time of last swing
 local hookedTools = setmetatable({}, { __mode = "k" })
 
-local function buildBat()
+local function buildBat(scale)
 	local tool = Instance.new("Tool")
+	tool:SetAttribute("Scale", scale)
 	tool.Name = Config.BatName
 	tool.ToolTip = "Bonk thieves to make them drop your egg!"
 	tool.CanBeDropped = false
 	tool.RequiresHandle = true
-	tool.Grip = REST_GRIP
+	tool.Grip = restGrip(scale)
 
 	local handle = Instance.new("Part")
 	handle.Name = "Handle"
-	handle.Size = Vector3.new(0.7, 0.7, 4.6)
+	handle.Size = Vector3.new(0.7, 0.7, 4.6) * scale
 	handle.Color = Color3.fromRGB(125, 85, 50)
 	handle.Material = Enum.Material.Wood
 	handle.CanCollide = false
@@ -43,7 +51,7 @@ local function buildBat()
 
 	local tip = Instance.new("Part")
 	tip.Name = "AuraTip"
-	tip.Size = Vector3.new(1, 1, 1.6)
+	tip.Size = Vector3.new(1, 1, 1.6) * scale
 	tip.Color = Color3.fromRGB(120, 220, 255)
 	tip.Material = Enum.Material.Neon
 	tip.CanCollide = false
@@ -52,7 +60,7 @@ local function buildBat()
 	tip.Massless = true
 	tip.TopSurface = Enum.SurfaceType.Smooth
 	tip.BottomSurface = Enum.SurfaceType.Smooth
-	tip.CFrame = handle.CFrame * CFrame.new(0, 0, -1.9) -- the far end, away from the hand
+	tip.CFrame = handle.CFrame * CFrame.new(0, 0, -1.9 * scale) -- the far end, away from the hand
 	tip.Parent = tool
 
 	local tipWeld = Instance.new("WeldConstraint")
@@ -104,14 +112,16 @@ local function swing(player, tool)
 		sound:Play()
 	end
 
-	tool.Grip = SWING_GRIP
+	local scale = tool:GetAttribute("Scale") or 1
+	tool.Grip = swingGrip(scale)
 	task.delay(0.25, function()
 		if tool.Parent then
-			tool.Grip = REST_GRIP
+			tool.Grip = restGrip(scale)
 		end
 	end)
 
 	local look = root.CFrame.LookVector
+	local reach = Config.BatRange * scale
 	for _, other in Players:GetPlayers() do
 		if other ~= player then
 			local _, otherRoot = getLiving(other)
@@ -119,7 +129,7 @@ local function swing(player, tool)
 				local offset = otherRoot.Position - root.Position
 				local distance = offset.Magnitude
 				local flat = Vector3.new(offset.X, 0, offset.Z)
-				if distance <= Config.BatRange then
+				if distance <= reach then
 					-- must be roughly in front of the swinger (or right on top of them)
 					local inFront = flat.Magnitude < 1 or look:Dot(flat.Unit) > 0.1
 					if inFront then
@@ -151,7 +161,7 @@ local function hasBat(player)
 end
 
 function BatService.Init()
-	template = buildBat()
+	template = buildBat(1)
 	template.Parent = StarterPack -- everyone gets a copy each time they spawn
 end
 
@@ -177,6 +187,33 @@ function BatService.EnsureBat(player)
 	local backpack = player:FindFirstChildOfClass("Backpack")
 	if backpack then
 		template:Clone().Parent = backpack
+	end
+end
+
+-- Swaps the player's bat for one built at `scale` when their size changed.
+function BatService.MatchScale(player, scale)
+	local backpack = player:FindFirstChildOfClass("Backpack")
+	local character = player.Character
+	local current = (character and character:FindFirstChild(Config.BatName))
+		or (backpack and backpack:FindFirstChild(Config.BatName))
+	if not current or not current:IsA("Tool") then
+		return
+	end
+	if math.abs((current:GetAttribute("Scale") or 1) - scale) < 0.01 then
+		return
+	end
+
+	local equipped = character ~= nil and current.Parent == character
+	local replacement = buildBat(scale)
+	current:Destroy()
+	if equipped then
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		replacement.Parent = backpack or character
+		if humanoid then
+			humanoid:EquipTool(replacement)
+		end
+	elseif backpack then
+		replacement.Parent = backpack
 	end
 end
 

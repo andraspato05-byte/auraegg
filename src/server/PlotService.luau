@@ -1037,14 +1037,14 @@ local function tickFast()
 				local localPos = plot.Info.CFrame:PointToObjectSpace(root.Position)
 				if localPos.Y > -2 and localPos.Y < 10 then
 					for slotIndex, slotInfo in plot.Info.Slots do
-						local pad = slotInfo.PadLocal
-						if math.abs(localPos.X - pad.X) <= 2.6 and math.abs(localPos.Z - pad.Z) <= 2.6 then
+						local padPos = slotInfo.PadLocal
+						if math.abs(localPos.X - padPos.X) <= 2.6 and math.abs(localPos.Z - padPos.Z) <= 2.6 then
 							collectSlot(plot, slotIndex)
 						end
 					end
 
-					local lockPad = plot.Info.LockPadLocal
-					if math.abs(localPos.X - lockPad.X) <= 3.6 and math.abs(localPos.Z - lockPad.Z) <= 2.6 then
+					local lockPadPos = plot.Info.LockPadLocal
+					if math.abs(localPos.X - lockPadPos.X) <= 3.6 and math.abs(localPos.Z - lockPadPos.Z) <= 2.6 then
 						if plot.LockedUntil == 0 and now >= plot.CooldownUntil then
 							lockPlot(plot, now)
 						end

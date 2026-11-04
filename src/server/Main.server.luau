@@ -117,6 +117,7 @@ local function onPlayerAdded(player)
 	Session.SetCash(player, data.Cash)
 	Session.SetSteals(player, data.Steals)
 	Session.SetSpeed(player, data.Speed)
+	session.BaseLevel = data.BaseLevel -- before LoadEggs, which refreshes the base
 	PlotService.RefreshWalkSpeed(player)
 	if PlotService.GetPlot(player) then
 		PlotService.LoadEggs(player, data.Eggs)
