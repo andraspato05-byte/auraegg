@@ -50,7 +50,8 @@ local function weld(part0, part1)
 end
 
 -- Returns model, eggDefinition, corePart. The model's PrimaryPart is the core.
-function EggVisuals.Create(eggId, anchored)
+-- mutationName (optional), e.g. "Storm", adds the mutation's look.
+function EggVisuals.Create(eggId, anchored, mutationName)
 	local def = Config.GetEgg(eggId)
 	assert(def, "Unknown egg id: " .. tostring(eggId))
 	local rarity = Config.GetRarity(def.Rarity)
@@ -58,8 +59,12 @@ function EggVisuals.Create(eggId, anchored)
 	local isSecret = def.Rarity == "Secret"
 
 	local model = Instance.new("Model")
-	model.Name = def.Name
+	local mutation = Config.GetMutation(mutationName)
+	model.Name = Config.GetEggDisplayName(def.Id, mutationName)
 	model:SetAttribute("EggId", def.Id)
+	if mutation then
+		model:SetAttribute("Mutation", mutation.Name)
+	end
 
 	local core = makeEllipsoid("Core", BASE_SIZE * scale, def.EggColor, Enum.Material.SmoothPlastic, 0, anchored)
 	core.CastShadow = true
@@ -127,6 +132,43 @@ function EggVisuals.Create(eggId, anchored)
 	light.Shadows = false
 	light.Parent = core
 
+	if mutation then
+		-- Storm-charged: an electric outer shell, crackling sparks and a blue glow
+		local stormShell = makeEllipsoid(
+			"MutationAura",
+			core.Size * 1.6,
+			mutation.Color,
+			Enum.Material.ForceField,
+			0,
+			anchored
+		)
+		stormShell.CFrame = CFrame.new()
+		stormShell.Parent = model
+		weld(core, stormShell)
+
+		local sparks = Instance.new("ParticleEmitter")
+		sparks.Name = "MutationSparks"
+		sparks.Color = ColorSequence.new(mutation.Color)
+		sparks.LightEmission = 1
+		sparks.Rate = 25
+		sparks.Lifetime = NumberRange.new(0.15, 0.35)
+		sparks.Speed = NumberRange.new(6, 10)
+		sparks.SpreadAngle = Vector2.new(180, 180)
+		sparks.Size = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0.25 * scale),
+			NumberSequenceKeypoint.new(1, 0),
+		})
+		sparks.Parent = attachment
+
+		local stormLight = Instance.new("PointLight")
+		stormLight.Name = "MutationLight"
+		stormLight.Color = mutation.Color
+		stormLight.Brightness = 2.5
+		stormLight.Range = 12
+		stormLight.Shadows = false
+		stormLight.Parent = core
+	end
+
 	model.PrimaryPart = core
 	return model, def, core
 end
@@ -156,12 +198,21 @@ function EggVisuals.AddInfo(model, extraText, extraColor)
 	local core = model.PrimaryPart
 	local def = Config.GetEgg(model:GetAttribute("EggId"))
 	local rarity = Config.GetRarity(def.Rarity)
+	local mutationName = model:GetAttribute("Mutation")
+	local mutation = Config.GetMutation(mutationName)
 
 	local lines = {
 		{ def.Name, Color3.fromRGB(255, 255, 255), false },
 		{ def.Rarity, rarity.Color, def.Rarity == "Secret" },
-		{ Config.FormatCash(def.Income) .. "/s", Color3.fromRGB(110, 255, 140), false },
 	}
+	if mutation then
+		table.insert(lines, { string.upper(mutation.Name) .. " x" .. mutation.IncomeMultiplier, mutation.Color, false })
+	end
+	table.insert(lines, {
+		Config.FormatCash(Config.GetEggIncome(def.Id, mutationName)) .. "/s",
+		Color3.fromRGB(110, 255, 140),
+		false,
+	})
 	if extraText then
 		table.insert(lines, { extraText, extraColor or Color3.fromRGB(255, 220, 70), false })
 	end

@@ -13,6 +13,7 @@ local EggVisuals = require(script.Parent.EggVisuals)
 local Session = require(script.Parent.Session)
 local Remotes = require(script.Parent.Remotes)
 local PlotService = require(script.Parent.PlotService)
+local EventService = require(script.Parent.EventService)
 
 local ConveyorService = {}
 
@@ -22,7 +23,7 @@ local COLOR_PRICE = Color3.fromRGB(255, 220, 70)
 local MAX_BUY_DISTANCE = 20
 
 local rng = Random.new()
-local beltEggs = {} -- array of { Model, EggId, X, Angle, HalfHeight, Bought }
+local beltEggs = {} -- array of { Model, EggId, Mutation, Price, X, Angle, HalfHeight, Bought }
 local belt = nil
 local folder = nil
 
@@ -57,7 +58,7 @@ local function tryBuy(player, entry)
 		return
 	end
 
-	local def = Config.GetEgg(entry.EggId)
+	local eggName = Config.GetEggDisplayName(entry.EggId, entry.Mutation)
 	local plot = PlotService.GetPlot(player)
 	if not plot then
 		Remotes.Notify(player, "You don't have a base yet!", COLOR_BAD)
@@ -70,15 +71,15 @@ local function tryBuy(player, entry)
 		return
 	end
 
-	if not Session.TrySpend(player, def.Price) then
-		Remotes.Notify(player, "You need " .. Config.FormatCash(def.Price) .. " to buy the " .. def.Name .. "!", COLOR_BAD)
+	if not Session.TrySpend(player, entry.Price) then
+		Remotes.Notify(player, "You need " .. Config.FormatCash(entry.Price) .. " to buy the " .. eggName .. "!", COLOR_BAD)
 		return
 	end
 
 	entry.Bought = true
 	removeEntry(entry)
-	PlotService.PlaceEgg(plot, slotIndex, entry.EggId)
-	Remotes.Notify(player, "You bought the " .. def.Name .. "! It's on your base now.", COLOR_GOOD)
+	PlotService.PlaceEgg(plot, slotIndex, entry.EggId, entry.Mutation)
+	Remotes.Notify(player, "You bought the " .. eggName .. "! It's on your base now.", COLOR_GOOD)
 end
 
 local function spawnEgg()
@@ -86,13 +87,24 @@ local function spawnEgg()
 		return
 	end
 
-	local eggId = Config.RollEggId(rng)
-	local model, def, core = EggVisuals.Create(eggId, true)
-	EggVisuals.AddInfo(model, Config.FormatCash(def.Price), COLOR_PRICE)
+	-- During an AURA STORM rare eggs are more likely and some come out Storm-charged.
+	local storm = EventService.IsActive()
+	local eggId = Config.RollEggId(rng, nil, storm and Config.Event.RareLuck or 1)
+	local mutationName = nil
+	if storm and rng:NextNumber() < Config.Event.StormChance then
+		mutationName = "Storm"
+	end
+	local price = Config.GetEggPrice(eggId, mutationName)
+	local eggName = Config.GetEggDisplayName(eggId, mutationName)
+
+	local model, def, core = EggVisuals.Create(eggId, true, mutationName)
+	EggVisuals.AddInfo(model, Config.FormatCash(price), COLOR_PRICE)
 
 	local entry = {
 		Model = model,
 		EggId = eggId,
+		Mutation = mutationName,
+		Price = price,
 		X = belt.StartX,
 		Angle = rng:NextNumber() * math.pi * 2,
 		HalfHeight = core.Size.Y / 2,
@@ -101,8 +113,8 @@ local function spawnEgg()
 
 	local prompt = Instance.new("ProximityPrompt")
 	prompt.Name = "BuyPrompt"
-	prompt.ActionText = "Buy " .. Config.FormatCash(def.Price)
-	prompt.ObjectText = def.Name
+	prompt.ActionText = "Buy " .. Config.FormatCash(price)
+	prompt.ObjectText = eggName
 	prompt.HoldDuration = 0.25
 	prompt.KeyboardKeyCode = Enum.KeyCode.E
 	prompt.MaxActivationDistance = 12
@@ -118,7 +130,7 @@ local function spawnEgg()
 
 	local rarity = Config.GetRarity(def.Rarity)
 	if rarity.Index >= Config.AnnounceRarityIndex then
-		Remotes.NotifyAll("A " .. def.Rarity .. " " .. def.Name .. " just came out of the machine!", rarity.Color)
+		Remotes.NotifyAll("A " .. def.Rarity .. " " .. eggName .. " just came out of the machine!", rarity.Color)
 	end
 end
 
@@ -151,7 +163,11 @@ function ConveyorService.Init(beltInfo)
 			if not ok then
 				warn("[StealTheAuraEgg] Belt spawn error: " .. tostring(err))
 			end
-			task.wait(Config.BeltSpawnInterval)
+			local interval = Config.BeltSpawnInterval
+			if EventService.IsActive() then
+				interval *= Config.Event.SpawnIntervalMultiplier
+			end
+			task.wait(interval)
 		end
 	end)
 end

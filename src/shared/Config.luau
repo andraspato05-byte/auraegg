@@ -30,6 +30,30 @@ Config.StealHoldDuration = 1.5
 Config.CarryWalkSpeed = 11
 Config.NormalWalkSpeed = 16
 
+-- AURA STORM event -------------------------------------------------------------
+-- A purple lightning storm. While it lasts, eggs come out of the machine faster,
+-- rare eggs are much more likely, and some eggs come out Storm-charged.
+Config.Event = {
+	Name = "AURA STORM",
+	FirstDelay = 180, -- seconds after the server starts until the first storm
+	Interval = 900, -- seconds between the start of one storm and the next
+	Duration = 240, -- seconds a storm lasts
+	WarningTime = 30, -- announce this many seconds before it starts
+	SpawnIntervalMultiplier = 0.5, -- eggs come out twice as fast
+	RareLuck = 3, -- Rare and better eggs are 3x more likely
+	StormChance = 0.3, -- chance an egg comes out Storm-charged
+}
+
+-- Mutations are saved with the egg ("DragonAura:Storm") and change its value.
+Config.Mutations = {
+	Storm = {
+		Name = "Storm",
+		IncomeMultiplier = 3,
+		PriceMultiplier = 2.5,
+		Color = Color3.fromRGB(110, 200, 255),
+	},
+}
+
 -- Speed + treadmills ----------------------------------------------------------
 -- Running on a treadmill in the gym earns Speed points.
 -- Walk speed = NormalWalkSpeed + Speed * SpeedPerPoint (max MaxSpeed points).
@@ -178,12 +202,18 @@ end
 
 -- Picks a random egg id using the rarity weights.
 -- minRarityIndex (optional) skips rarities below it, e.g. 5 = Legendary or better.
-function Config.RollEggId(rng, minRarityIndex)
+-- rareLuck (optional) multiplies the weight of Rare (index 3) and better.
+function Config.RollEggId(rng, minRarityIndex, rareLuck)
 	local minIndex = minRarityIndex or 1
+	local luck = rareLuck or 1
+	local function weightOf(rarity)
+		return rarity.Index >= 3 and rarity.Weight * luck or rarity.Weight
+	end
+
 	local total = 0
 	for _, rarity in Config.Rarities do
 		if rarity.Index >= minIndex and Config.EggsByRarity[rarity.Name] then
-			total += rarity.Weight
+			total += weightOf(rarity)
 		end
 	end
 
@@ -191,7 +221,7 @@ function Config.RollEggId(rng, minRarityIndex)
 	for _, rarity in Config.Rarities do
 		local list = Config.EggsByRarity[rarity.Name]
 		if rarity.Index >= minIndex and list then
-			roll -= rarity.Weight
+			roll -= weightOf(rarity)
 			if roll <= 0 then
 				return list[rng:NextInteger(1, #list)].Id
 			end
@@ -206,6 +236,70 @@ function Config.RollEggId(rng, minRarityIndex)
 		end
 	end
 	return Config.Eggs[1].Id
+end
+
+-- Mutation helpers --------------------------------------------------------------
+
+function Config.GetMutation(mutationName)
+	if mutationName == nil then
+		return nil
+	end
+	return Config.Mutations[mutationName]
+end
+
+function Config.GetEggIncome(eggId, mutationName)
+	local def = Config.GetEgg(eggId)
+	if not def then
+		return 0
+	end
+	local mutation = Config.GetMutation(mutationName)
+	return def.Income * (mutation and mutation.IncomeMultiplier or 1)
+end
+
+function Config.GetEggPrice(eggId, mutationName)
+	local def = Config.GetEgg(eggId)
+	if not def then
+		return 0
+	end
+	local mutation = Config.GetMutation(mutationName)
+	return math.floor(def.Price * (mutation and mutation.PriceMultiplier or 1))
+end
+
+function Config.GetEggDisplayName(eggId, mutationName)
+	local def = Config.GetEgg(eggId)
+	local name = def and def.Name or tostring(eggId)
+	local mutation = Config.GetMutation(mutationName)
+	if mutation then
+		return mutation.Name .. " " .. name
+	end
+	return name
+end
+
+-- Saved form of an egg: "DragonAura" or "DragonAura:Storm".
+function Config.EncodeEgg(eggId, mutationName)
+	if mutationName then
+		return eggId .. ":" .. mutationName
+	end
+	return eggId
+end
+
+-- Returns eggId, mutationName (nil if none), or nil if the text is not a valid egg.
+function Config.DecodeEgg(text)
+	if type(text) ~= "string" then
+		return nil, nil
+	end
+	local eggId, mutationName = string.match(text, "^([^:]+):([^:]+)$")
+	if not eggId then
+		eggId = text
+		mutationName = nil
+	end
+	if not Config.GetEgg(eggId) then
+		return nil, nil
+	end
+	if mutationName and not Config.Mutations[mutationName] then
+		mutationName = nil -- unknown mutation: keep the egg, drop the mutation
+	end
+	return eggId, mutationName
 end
 
 local SUFFIXES = { "", "K", "M", "B", "T", "Qa", "Qi", "Sx" }

@@ -32,7 +32,7 @@ local CARRY_HEIGHT = 3.3 -- studs above the HumanoidRootPart to the bottom of a 
 
 local plots = {} -- array of plot states
 local plotByPlayer = {} -- [Player] = plot state
-local carriers = {} -- [Player] = { FromPlot, SlotIndex, EggId, Model, StartTime, MinTime, LastPos, LastMoveTime }
+local carriers = {} -- [Player] = { FromPlot, SlotIndex, EggId, Mutation, Model, StartTime, MinTime, Speed, LastPos, LastMoveTime }
 local holdStarts = {} -- [Player] = { Prompt, Time } when they started holding a Steal prompt
 local collisionGroupsReady = false
 local shuttingDown = false
@@ -77,8 +77,8 @@ local function isInsidePlot(plot, position)
 	return math.abs(localPos.X) <= half and math.abs(localPos.Z) <= half and localPos.Y > -5 and localPos.Y < 40
 end
 
-local function sellPrice(def)
-	return math.floor(def.Price * Config.SellMultiplier)
+local function sellPrice(eggId, mutationName)
+	return math.floor(Config.GetEggPrice(eggId, mutationName) * Config.SellMultiplier)
 end
 
 local function findFreeSlot(plot)
@@ -113,10 +113,7 @@ local function getIncome(plot)
 	local total = 0
 	for _, slot in plot.Slots do
 		if slot.EggId and not slot.StolenBy then
-			local def = Config.GetEgg(slot.EggId)
-			if def then
-				total += def.Income
-			end
+			total += Config.GetEggIncome(slot.EggId, slot.Mutation)
 		end
 	end
 	return total * cashMultiplier(plot.Owner)
@@ -193,12 +190,13 @@ local function renderSlot(plot, slotIndex)
 	end
 
 	if slot.EggId and not slot.StolenBy and plot.Owner then
-		local model, def, core = EggVisuals.Create(slot.EggId, true)
+		local model, _, core = EggVisuals.Create(slot.EggId, true, slot.Mutation)
+		local displayName = Config.GetEggDisplayName(slot.EggId, slot.Mutation)
 		EggVisuals.AddInfo(model)
 
 		local ownerUserId = plot.Owner.UserId
 		local stealPrompt =
-			makePrompt(core, "Steal", "Steal", def.Name, Config.StealHoldDuration, Enum.KeyCode.E, ownerUserId)
+			makePrompt(core, "Steal", "Steal", displayName, Config.StealHoldDuration, Enum.KeyCode.E, ownerUserId)
 		stealPrompt.PromptButtonHoldBegan:Connect(function(player)
 			holdStarts[player] = { Prompt = stealPrompt, Time = time() }
 		end)
@@ -218,8 +216,8 @@ local function renderSlot(plot, slotIndex)
 		local sellPrompt = makePrompt(
 			core,
 			"Sell",
-			"Sell for " .. Config.FormatCash(sellPrice(def)),
-			def.Name,
+			"Sell for " .. Config.FormatCash(sellPrice(slot.EggId, slot.Mutation)),
+			displayName,
 			1,
 			Enum.KeyCode.F,
 			ownerUserId
@@ -237,9 +235,10 @@ local function renderSlot(plot, slotIndex)
 	updatePadLabel(plot, slotIndex)
 end
 
-local function placeEgg(plot, slotIndex, eggId)
+local function placeEgg(plot, slotIndex, eggId, mutationName)
 	local slot = plot.Slots[slotIndex]
 	slot.EggId = eggId
+	slot.Mutation = mutationName
 	slot.Pending = 0
 	slot.StolenBy = nil
 	renderSlot(plot, slotIndex)
@@ -296,8 +295,8 @@ end
 -- Carrying stolen eggs
 ------------------------------------------------------------------------------
 
-local function createCarryModel(thief, eggId, root)
-	local model, _, core = EggVisuals.Create(eggId, false)
+local function createCarryModel(thief, eggId, mutationName, root)
+	local model, _, core = EggVisuals.Create(eggId, false, mutationName)
 	model.Name = "Carried_" .. thief.Name
 	EggVisuals.AddInfo(model, "STOLEN BY " .. string.upper(thief.DisplayName), COLOR_BAD)
 
@@ -360,8 +359,8 @@ function PlotService.CancelCarry(thief, message)
 		renderSlot(plot, carry.SlotIndex)
 		updateIncomeAttribute(plot)
 		if plot.Owner and plot.Owner ~= thief then
-			local def = Config.GetEgg(carry.EggId)
-			Remotes.Notify(plot.Owner, "Your " .. (def and def.Name or "egg") .. " is back on its pedestal!", COLOR_GOOD)
+			local eggName = Config.GetEggDisplayName(carry.EggId, carry.Mutation)
+			Remotes.Notify(plot.Owner, "Your " .. eggName .. " is back on its pedestal!", COLOR_GOOD)
 		end
 	end
 
@@ -393,10 +392,12 @@ local function deliver(thief)
 	end
 
 	local def = Config.GetEgg(carry.EggId)
+	local eggName = Config.GetEggDisplayName(carry.EggId, carry.Mutation)
 	local victim = victimPlot.Owner
 
 	-- Remove from the victim
 	victimSlot.EggId = nil
+	victimSlot.Mutation = nil
 	victimSlot.Pending = 0
 	victimSlot.StolenBy = nil
 	renderSlot(victimPlot, carry.SlotIndex)
@@ -404,18 +405,18 @@ local function deliver(thief)
 
 	-- Give to the thief
 	endCarry(thief)
-	placeEgg(ownPlot, freeIndex, carry.EggId)
+	placeEgg(ownPlot, freeIndex, carry.EggId, carry.Mutation)
 	Session.AddSteal(thief)
 
-	Remotes.Notify(thief, "You stole the " .. def.Name .. "!", COLOR_GOOD)
+	Remotes.Notify(thief, "You stole the " .. eggName .. "!", COLOR_GOOD)
 	if victim then
-		Remotes.Notify(victim, thief.DisplayName .. " stole your " .. def.Name .. "!", COLOR_BAD)
+		Remotes.Notify(victim, thief.DisplayName .. " stole your " .. eggName .. "!", COLOR_BAD)
 	end
 
 	local rarity = Config.GetRarity(def.Rarity)
 	if rarity.Index >= Config.AnnounceRarityIndex and victim then
 		Remotes.NotifyAll(
-			thief.DisplayName .. " stole a " .. def.Rarity .. " " .. def.Name .. " from " .. victim.DisplayName .. "!",
+			thief.DisplayName .. " stole a " .. def.Rarity .. " " .. eggName .. " from " .. victim.DisplayName .. "!",
 			rarity.Color
 		)
 	end
@@ -486,7 +487,8 @@ function PlotService.TrySteal(thief, plot, slotIndex)
 	collectSlot(plot, slotIndex)
 
 	local eggId = slot.EggId
-	local def = Config.GetEgg(eggId)
+	local mutationName = slot.Mutation
+	local eggName = Config.GetEggDisplayName(eggId, mutationName)
 	slot.StolenBy = thief
 	renderSlot(plot, slotIndex)
 	updateIncomeAttribute(plot)
@@ -502,7 +504,8 @@ function PlotService.TrySteal(thief, plot, slotIndex)
 		FromPlot = plot,
 		SlotIndex = slotIndex,
 		EggId = eggId,
-		Model = createCarryModel(thief, eggId, root),
+		Mutation = mutationName,
+		Model = createCarryModel(thief, eggId, mutationName, root),
 		StartTime = now,
 		MinTime = walkDistance / (carrySpeed * MOVE_SLACK_MULTIPLIER),
 		Speed = carrySpeed,
@@ -510,10 +513,10 @@ function PlotService.TrySteal(thief, plot, slotIndex)
 		LastMoveTime = now,
 	}
 	humanoid.WalkSpeed = carrySpeed
-	thief:SetAttribute("CarryingEgg", def.Name)
+	thief:SetAttribute("CarryingEgg", eggName)
 
-	Remotes.Notify(thief, "You grabbed the " .. def.Name .. "! Run back to your base!", COLOR_INFO)
-	Remotes.Notify(plot.Owner, thief.DisplayName .. " is stealing your " .. def.Name .. "! Bonk them with your bat!", COLOR_ALERT)
+	Remotes.Notify(thief, "You grabbed the " .. eggName .. "! Run back to your base!", COLOR_INFO)
+	Remotes.Notify(plot.Owner, thief.DisplayName .. " is stealing your " .. eggName .. "! Bonk them with your bat!", COLOR_ALERT)
 end
 
 function PlotService.TrySell(player, plot, slotIndex)
@@ -530,16 +533,17 @@ function PlotService.TrySell(player, plot, slotIndex)
 
 	collectSlot(plot, slotIndex)
 
-	local def = Config.GetEgg(slot.EggId)
-	local amount = sellPrice(def)
+	local eggName = Config.GetEggDisplayName(slot.EggId, slot.Mutation)
+	local amount = sellPrice(slot.EggId, slot.Mutation)
 	Session.AddCash(player, amount)
 
 	slot.EggId = nil
+	slot.Mutation = nil
 	slot.Pending = 0
 	renderSlot(plot, slotIndex)
 	updateIncomeAttribute(plot)
 
-	Remotes.Notify(player, "Sold " .. def.Name .. " for " .. Config.FormatCash(amount), COLOR_GOOD)
+	Remotes.Notify(player, "Sold " .. eggName .. " for " .. Config.FormatCash(amount), COLOR_GOOD)
 end
 
 -- Called by BatService when `victim` gets bonked by `attacker`.
@@ -563,8 +567,8 @@ function PlotService.FindFreeSlot(plot)
 	return findFreeSlot(plot)
 end
 
-function PlotService.PlaceEgg(plot, slotIndex, eggId)
-	placeEgg(plot, slotIndex, eggId)
+function PlotService.PlaceEgg(plot, slotIndex, eggId, mutationName)
+	placeEgg(plot, slotIndex, eggId, mutationName)
 end
 
 function PlotService.IsCarrying(player)
@@ -625,16 +629,17 @@ function PlotService.AssignPlot(player)
 	return nil
 end
 
--- Puts saved eggs back on the pedestals. eggs = { [slotIndex] = eggId }
+-- Puts saved eggs back on the pedestals. eggs = { [slotIndex] = "EggId" or "EggId:Mutation" }
 function PlotService.LoadEggs(player, eggs)
 	local plot = plotByPlayer[player]
 	if not plot then
 		return
 	end
-	for slotIndex, eggId in eggs do
+	for slotIndex, saved in eggs do
 		local slot = plot.Slots[slotIndex]
-		if slot and slot.EggId == nil and Config.GetEgg(eggId) then
-			placeEgg(plot, slotIndex, eggId)
+		local eggId, mutationName = Config.DecodeEgg(saved)
+		if slot and slot.EggId == nil and eggId then
+			placeEgg(plot, slotIndex, eggId, mutationName)
 		end
 	end
 	updateIncomeAttribute(plot)
@@ -703,7 +708,7 @@ function PlotService.BuildSaveData(player)
 		for slotIndex, slot in plot.Slots do
 			if slot.EggId then
 				-- An egg that is being stolen right now still belongs to its owner.
-				eggs[tostring(slotIndex)] = slot.EggId
+				eggs[tostring(slotIndex)] = Config.EncodeEgg(slot.EggId, slot.Mutation)
 				pending += slot.Pending
 			end
 		end
@@ -747,6 +752,7 @@ function PlotService.ReleasePlot(player)
 			slot.Display = nil
 		end
 		slot.EggId = nil
+		slot.Mutation = nil
 		slot.Pending = 0
 		slot.StolenBy = nil
 		updatePadLabel(plot, slotIndex)
@@ -772,10 +778,7 @@ local function tickSecond()
 		if plot.Owner then
 			for slotIndex, slot in plot.Slots do
 				if slot.EggId and not slot.StolenBy then
-					local def = Config.GetEgg(slot.EggId)
-					if def then
-						slot.Pending += def.Income * cashMultiplier(plot.Owner)
-					end
+					slot.Pending += Config.GetEggIncome(slot.EggId, slot.Mutation) * cashMultiplier(plot.Owner)
 				end
 				updatePadLabel(plot, slotIndex)
 			end
@@ -881,7 +884,7 @@ function PlotService.Init(plotInfos)
 			Slots = {},
 		}
 		for slotIndex = 1, Config.SlotsPerPlot do
-			plot.Slots[slotIndex] = { EggId = nil, Pending = 0, StolenBy = nil, Display = nil }
+			plot.Slots[slotIndex] = { EggId = nil, Mutation = nil, Pending = 0, StolenBy = nil, Display = nil }
 		end
 		plots[index] = plot
 	end

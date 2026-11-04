@@ -1,0 +1,1597 @@
+{
+ "className": "ScreenGui",
+ "properties": {
+  "ResetOnSpawn": false,
+  "ZIndexBehavior": {
+   "Enum": 1
+  }
+ },
+ "children": [
+  {
+   "name": "CashPanel",
+   "className": "Frame",
+   "properties": {
+    "Size": {
+     "UDim2": [
+      [
+       0,
+       260
+      ],
+      [
+       0,
+       92
+      ]
+     ]
+    },
+    "Position": {
+     "UDim2": [
+      [
+       0.5,
+       0
+      ],
+      [
+       0,
+       8
+      ]
+     ]
+    },
+    "AnchorPoint": {
+     "Vector2": [
+      0.5,
+      0
+     ]
+    },
+    "BorderSizePixel": 0,
+    "BackgroundColor3": {
+     "Color3": [
+      0.11765,
+      0.07843,
+      0.19608
+     ]
+    },
+    "BackgroundTransparency": 0.15
+   },
+   "children": [
+    {
+     "name": "Corner",
+     "className": "UICorner",
+     "properties": {
+      "CornerRadius": {
+       "UDim": [
+        0,
+        14
+       ]
+      }
+     }
+    },
+    {
+     "name": "Stroke",
+     "className": "UIStroke",
+     "properties": {
+      "Color": {
+       "Color3": [
+        0.70588,
+        0.43137,
+        1.0
+       ]
+      },
+      "Thickness": 2,
+      "ApplyStrokeMode": {
+       "Enum": 1
+      }
+     }
+    },
+    {
+     "name": "Cash",
+     "className": "TextLabel",
+     "properties": {
+      "Size": {
+       "UDim2": [
+        [
+         1,
+         -16
+        ],
+        [
+         0,
+         44
+        ]
+       ]
+      },
+      "Position": {
+       "UDim2": [
+        [
+         0,
+         8
+        ],
+        [
+         0,
+         4
+        ]
+       ]
+      },
+      "AnchorPoint": {
+       "Vector2": [
+        0,
+        0
+       ]
+      },
+      "BorderSizePixel": 0,
+      "BackgroundColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      },
+      "BackgroundTransparency": 1.0,
+      "FontFace": {
+       "Font": {
+        "family": "rbxasset://fonts/families/FredokaOne.json",
+        "weight": "Regular",
+        "style": "Normal"
+       }
+      },
+      "Text": "$0",
+      "TextColor3": {
+       "Color3": [
+        0.47059,
+        1.0,
+        0.54902
+       ]
+      },
+      "TextScaled": true,
+      "TextStrokeTransparency": 0.3,
+      "TextStrokeColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      }
+     }
+    },
+    {
+     "name": "Income",
+     "className": "TextLabel",
+     "properties": {
+      "Size": {
+       "UDim2": [
+        [
+         1,
+         -16
+        ],
+        [
+         0,
+         22
+        ]
+       ]
+      },
+      "Position": {
+       "UDim2": [
+        [
+         0,
+         8
+        ],
+        [
+         0,
+         48
+        ]
+       ]
+      },
+      "AnchorPoint": {
+       "Vector2": [
+        0,
+        0
+       ]
+      },
+      "BorderSizePixel": 0,
+      "BackgroundColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      },
+      "BackgroundTransparency": 1.0,
+      "FontFace": {
+       "Font": {
+        "family": "rbxasset://fonts/families/FredokaOne.json",
+        "weight": "Regular",
+        "style": "Normal"
+       }
+      },
+      "Text": "+$0/s",
+      "TextColor3": {
+       "Color3": [
+        1.0,
+        0.90196,
+        0.47059
+       ]
+      },
+      "TextScaled": true,
+      "TextStrokeTransparency": 0.3,
+      "TextStrokeColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      }
+     }
+    },
+    {
+     "name": "Speed",
+     "className": "TextLabel",
+     "properties": {
+      "Size": {
+       "UDim2": [
+        [
+         1,
+         -16
+        ],
+        [
+         0,
+         18
+        ]
+       ]
+      },
+      "Position": {
+       "UDim2": [
+        [
+         0,
+         8
+        ],
+        [
+         0,
+         70
+        ]
+       ]
+      },
+      "AnchorPoint": {
+       "Vector2": [
+        0,
+        0
+       ]
+      },
+      "BorderSizePixel": 0,
+      "BackgroundColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      },
+      "BackgroundTransparency": 1.0,
+      "FontFace": {
+       "Font": {
+        "family": "rbxasset://fonts/families/FredokaOne.json",
+        "weight": "Regular",
+        "style": "Normal"
+       }
+      },
+      "Text": "Speed 0",
+      "TextColor3": {
+       "Color3": [
+        0.47059,
+        0.86275,
+        1.0
+       ]
+      },
+      "TextScaled": true,
+      "TextStrokeTransparency": 0.3,
+      "TextStrokeColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "Notifications",
+   "className": "Frame",
+   "properties": {
+    "Size": {
+     "UDim2": [
+      [
+       0,
+       460
+      ],
+      [
+       0,
+       220
+      ]
+     ]
+    },
+    "Position": {
+     "UDim2": [
+      [
+       0.5,
+       0
+      ],
+      [
+       0,
+       168
+      ]
+     ]
+    },
+    "AnchorPoint": {
+     "Vector2": [
+      0.5,
+      0
+     ]
+    },
+    "BorderSizePixel": 0,
+    "BackgroundColor3": {
+     "Color3": [
+      0.11765,
+      0.07843,
+      0.19608
+     ]
+    },
+    "BackgroundTransparency": 1
+   },
+   "children": [
+    {
+     "name": "Layout",
+     "className": "UIListLayout",
+     "properties": {
+      "SortOrder": {
+       "Enum": 2
+      },
+      "HorizontalAlignment": {
+       "Enum": 0
+      },
+      "Padding": {
+       "UDim": [
+        0,
+        4
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "EventBanner",
+   "className": "Frame",
+   "properties": {
+    "Size": {
+     "UDim2": [
+      [
+       0,
+       320
+      ],
+      [
+       0,
+       54
+      ]
+     ]
+    },
+    "Position": {
+     "UDim2": [
+      [
+       0.5,
+       0
+      ],
+      [
+       0,
+       106
+      ]
+     ]
+    },
+    "AnchorPoint": {
+     "Vector2": [
+      0.5,
+      0
+     ]
+    },
+    "BorderSizePixel": 0,
+    "BackgroundColor3": {
+     "Color3": [
+      0.09804,
+      0.09804,
+      0.23529
+     ]
+    },
+    "BackgroundTransparency": 0.15
+   },
+   "children": [
+    {
+     "name": "Corner",
+     "className": "UICorner",
+     "properties": {
+      "CornerRadius": {
+       "UDim": [
+        0,
+        12
+       ]
+      }
+     }
+    },
+    {
+     "name": "Stroke",
+     "className": "UIStroke",
+     "properties": {
+      "Color": {
+       "Color3": [
+        0.43137,
+        0.78431,
+        1.0
+       ]
+      },
+      "Thickness": 2,
+      "ApplyStrokeMode": {
+       "Enum": 1
+      }
+     }
+    },
+    {
+     "name": "Title",
+     "className": "TextLabel",
+     "properties": {
+      "Size": {
+       "UDim2": [
+        [
+         1,
+         -16
+        ],
+        [
+         0,
+         24
+        ]
+       ]
+      },
+      "Position": {
+       "UDim2": [
+        [
+         0,
+         8
+        ],
+        [
+         0,
+         3
+        ]
+       ]
+      },
+      "AnchorPoint": {
+       "Vector2": [
+        0,
+        0
+       ]
+      },
+      "BorderSizePixel": 0,
+      "BackgroundColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      },
+      "BackgroundTransparency": 1.0,
+      "FontFace": {
+       "Font": {
+        "family": "rbxasset://fonts/families/FredokaOne.json",
+        "weight": "Regular",
+        "style": "Normal"
+       }
+      },
+      "Text": "NEXT EVENT: AURA STORM",
+      "TextColor3": {
+       "Color3": [
+        0.58824,
+        0.86275,
+        1.0
+       ]
+      },
+      "TextScaled": true,
+      "TextStrokeTransparency": 0.3,
+      "TextStrokeColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      }
+     }
+    },
+    {
+     "name": "Timer",
+     "className": "TextLabel",
+     "properties": {
+      "Size": {
+       "UDim2": [
+        [
+         1,
+         -16
+        ],
+        [
+         0,
+         22
+        ]
+       ]
+      },
+      "Position": {
+       "UDim2": [
+        [
+         0,
+         8
+        ],
+        [
+         0,
+         28
+        ]
+       ]
+      },
+      "AnchorPoint": {
+       "Vector2": [
+        0,
+        0
+       ]
+      },
+      "BorderSizePixel": 0,
+      "BackgroundColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      },
+      "BackgroundTransparency": 1.0,
+      "FontFace": {
+       "Font": {
+        "family": "rbxasset://fonts/families/FredokaOne.json",
+        "weight": "Regular",
+        "style": "Normal"
+       }
+      },
+      "Text": "--:--",
+      "TextColor3": {
+       "Color3": [
+        1.0,
+        1.0,
+        1.0
+       ]
+      },
+      "TextScaled": true,
+      "TextStrokeTransparency": 0.3,
+      "TextStrokeColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "CarryBanner",
+   "className": "TextLabel",
+   "properties": {
+    "Size": {
+     "UDim2": [
+      [
+       0,
+       520
+      ],
+      [
+       0,
+       44
+      ]
+     ]
+    },
+    "Position": {
+     "UDim2": [
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -150
+      ]
+     ]
+    },
+    "AnchorPoint": {
+     "Vector2": [
+      0.5,
+      0
+     ]
+    },
+    "BorderSizePixel": 0,
+    "BackgroundColor3": {
+     "Color3": [
+      0.23529,
+      0.07843,
+      0.07843
+     ]
+    },
+    "BackgroundTransparency": 0.25,
+    "FontFace": {
+     "Font": {
+      "family": "rbxasset://fonts/families/FredokaOne.json",
+      "weight": "Regular",
+      "style": "Normal"
+     }
+    },
+    "Text": "",
+    "TextColor3": {
+     "Color3": [
+      1.0,
+      0.86275,
+      0.35294
+     ]
+    },
+    "TextScaled": true,
+    "TextStrokeTransparency": 0.3,
+    "TextStrokeColor3": {
+     "Color3": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "Visible": false
+   },
+   "children": [
+    {
+     "name": "Corner",
+     "className": "UICorner",
+     "properties": {
+      "CornerRadius": {
+       "UDim": [
+        0,
+        12
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "HowToPlay",
+   "className": "TextLabel",
+   "properties": {
+    "Size": {
+     "UDim2": [
+      [
+       0,
+       340
+      ],
+      [
+       0,
+       204
+      ]
+     ]
+    },
+    "Position": {
+     "UDim2": [
+      [
+       0,
+       12
+      ],
+      [
+       1,
+       -12
+      ]
+     ]
+    },
+    "AnchorPoint": {
+     "Vector2": [
+      0,
+      1
+     ]
+    },
+    "BorderSizePixel": 0,
+    "BackgroundColor3": {
+     "Color3": [
+      0.11765,
+      0.07843,
+      0.19608
+     ]
+    },
+    "BackgroundTransparency": 0.25,
+    "FontFace": {
+     "Font": {
+      "family": "rbxasset://fonts/families/GothamSSm.json",
+      "weight": "Medium",
+      "style": "Normal"
+     }
+    },
+    "Text": "HOW TO PLAY\n- Buy Aura Eggs from the conveyor belt (E)\n- Eggs on your base make cash every second\n- Stand on the green pads to collect the cash\n- Steal eggs from other bases (hold E) and run home\n- Bonk thieves with your Aura Bat to get eggs back\n- Stand on the red pad to lock your base\n- Run on treadmills in the GYM to get faster\n- AURA STORM event: rare + Storm eggs!\n- Press SHOP for Robux boosts",
+    "TextColor3": {
+     "Color3": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    "TextScaled": false,
+    "TextStrokeTransparency": 1,
+    "TextStrokeColor3": {
+     "Color3": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "TextSize": 14,
+    "TextWrapped": true,
+    "TextXAlignment": {
+     "Enum": 0
+    },
+    "TextYAlignment": {
+     "Enum": 0
+    }
+   },
+   "children": [
+    {
+     "name": "Corner",
+     "className": "UICorner",
+     "properties": {
+      "CornerRadius": {
+       "UDim": [
+        0,
+        10
+       ]
+      }
+     }
+    },
+    {
+     "name": "Padding",
+     "className": "UIPadding",
+     "properties": {
+      "PaddingLeft": {
+       "UDim": [
+        0,
+        10
+       ]
+      },
+      "PaddingRight": {
+       "UDim": [
+        0,
+        10
+       ]
+      },
+      "PaddingTop": {
+       "UDim": [
+        0,
+        8
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ShopButton",
+   "className": "TextButton",
+   "properties": {
+    "Size": {
+     "UDim2": [
+      [
+       0,
+       130
+      ],
+      [
+       0,
+       56
+      ]
+     ]
+    },
+    "Position": {
+     "UDim2": [
+      [
+       0,
+       12
+      ],
+      [
+       0.5,
+       0
+      ]
+     ]
+    },
+    "AnchorPoint": {
+     "Vector2": [
+      0,
+      0.5
+     ]
+    },
+    "BorderSizePixel": 0,
+    "BackgroundColor3": {
+     "Color3": [
+      1.0,
+      0.7451,
+      0.15686
+     ]
+    },
+    "FontFace": {
+     "Font": {
+      "family": "rbxasset://fonts/families/FredokaOne.json",
+      "weight": "Regular",
+      "style": "Normal"
+     }
+    },
+    "Text": "SHOP",
+    "TextColor3": {
+     "Color3": [
+      0.23529,
+      0.11765,
+      0.0
+     ]
+    },
+    "TextScaled": true
+   },
+   "children": [
+    {
+     "name": "Corner",
+     "className": "UICorner",
+     "properties": {
+      "CornerRadius": {
+       "UDim": [
+        0,
+        12
+       ]
+      }
+     }
+    },
+    {
+     "name": "Stroke",
+     "className": "UIStroke",
+     "properties": {
+      "Color": {
+       "Color3": [
+        0.47059,
+        0.27451,
+        0.0
+       ]
+      },
+      "Thickness": 3,
+      "ApplyStrokeMode": {
+       "Enum": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "StormTestButton",
+   "className": "TextButton",
+   "properties": {
+    "Size": {
+     "UDim2": [
+      [
+       0,
+       190
+      ],
+      [
+       0,
+       32
+      ]
+     ]
+    },
+    "Position": {
+     "UDim2": [
+      [
+       0,
+       12
+      ],
+      [
+       0.5,
+       50
+      ]
+     ]
+    },
+    "AnchorPoint": {
+     "Vector2": [
+      0,
+      0.5
+     ]
+    },
+    "BorderSizePixel": 0,
+    "BackgroundColor3": {
+     "Color3": [
+      0.27451,
+      0.43137,
+      0.86275
+     ]
+    },
+    "FontFace": {
+     "Font": {
+      "family": "rbxasset://fonts/families/FredokaOne.json",
+      "weight": "Regular",
+      "style": "Normal"
+     }
+    },
+    "Text": "START STORM (Studio test)",
+    "TextColor3": {
+     "Color3": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    "TextScaled": true,
+    "Visible": false
+   },
+   "children": [
+    {
+     "name": "Corner",
+     "className": "UICorner",
+     "properties": {
+      "CornerRadius": {
+       "UDim": [
+        0,
+        8
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ShopPanel",
+   "className": "Frame",
+   "properties": {
+    "Size": {
+     "UDim2": [
+      [
+       0,
+       440
+      ],
+      [
+       0,
+       470
+      ]
+     ]
+    },
+    "Position": {
+     "UDim2": [
+      [
+       0.5,
+       0
+      ],
+      [
+       0.5,
+       0
+      ]
+     ]
+    },
+    "AnchorPoint": {
+     "Vector2": [
+      0.5,
+      0.5
+     ]
+    },
+    "BorderSizePixel": 0,
+    "BackgroundColor3": {
+     "Color3": [
+      0.11765,
+      0.07843,
+      0.19608
+     ]
+    },
+    "BackgroundTransparency": 0,
+    "Visible": false,
+    "ZIndex": 10
+   },
+   "children": [
+    {
+     "name": "Corner",
+     "className": "UICorner",
+     "properties": {
+      "CornerRadius": {
+       "UDim": [
+        0,
+        16
+       ]
+      }
+     }
+    },
+    {
+     "name": "Stroke",
+     "className": "UIStroke",
+     "properties": {
+      "Color": {
+       "Color3": [
+        1.0,
+        0.7451,
+        0.15686
+       ]
+      },
+      "Thickness": 3,
+      "ApplyStrokeMode": {
+       "Enum": 1
+      }
+     }
+    },
+    {
+     "name": "SizeLimit",
+     "className": "UISizeConstraint",
+     "properties": {
+      "MaxSize": {
+       "Vector2": [
+        440,
+        470
+       ]
+      }
+     }
+    },
+    {
+     "name": "Scale",
+     "className": "UIScale",
+     "properties": {
+      "Scale": 1
+     }
+    },
+    {
+     "name": "Title",
+     "className": "TextLabel",
+     "properties": {
+      "Size": {
+       "UDim2": [
+        [
+         1,
+         -70
+        ],
+        [
+         0,
+         40
+        ]
+       ]
+      },
+      "Position": {
+       "UDim2": [
+        [
+         0,
+         16
+        ],
+        [
+         0,
+         10
+        ]
+       ]
+      },
+      "AnchorPoint": {
+       "Vector2": [
+        0,
+        0
+       ]
+      },
+      "BorderSizePixel": 0,
+      "BackgroundColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      },
+      "BackgroundTransparency": 1.0,
+      "FontFace": {
+       "Font": {
+        "family": "rbxasset://fonts/families/FredokaOne.json",
+        "weight": "Regular",
+        "style": "Normal"
+       }
+      },
+      "Text": "AURA SHOP",
+      "TextColor3": {
+       "Color3": [
+        1.0,
+        0.82353,
+        0.31373
+       ]
+      },
+      "TextScaled": true,
+      "TextStrokeTransparency": 0.3,
+      "TextStrokeColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      },
+      "TextXAlignment": {
+       "Enum": 0
+      }
+     }
+    },
+    {
+     "name": "Close",
+     "className": "TextButton",
+     "properties": {
+      "Size": {
+       "UDim2": [
+        [
+         0,
+         36
+        ],
+        [
+         0,
+         36
+        ]
+       ]
+      },
+      "Position": {
+       "UDim2": [
+        [
+         1,
+         -12
+        ],
+        [
+         0,
+         12
+        ]
+       ]
+      },
+      "AnchorPoint": {
+       "Vector2": [
+        1,
+        0
+       ]
+      },
+      "BorderSizePixel": 0,
+      "BackgroundColor3": {
+       "Color3": [
+        0.86275,
+        0.23529,
+        0.23529
+       ]
+      },
+      "FontFace": {
+       "Font": {
+        "family": "rbxasset://fonts/families/FredokaOne.json",
+        "weight": "Regular",
+        "style": "Normal"
+       }
+      },
+      "Text": "X",
+      "TextColor3": {
+       "Color3": [
+        1.0,
+        1.0,
+        1.0
+       ]
+      },
+      "TextScaled": true
+     },
+     "children": [
+      {
+       "name": "Corner",
+       "className": "UICorner",
+       "properties": {
+        "CornerRadius": {
+         "UDim": [
+          0,
+          8
+         ]
+        }
+       }
+      }
+     ]
+    },
+    {
+     "name": "Items",
+     "className": "ScrollingFrame",
+     "properties": {
+      "Size": {
+       "UDim2": [
+        [
+         1,
+         -24
+        ],
+        [
+         1,
+         -72
+        ]
+       ]
+      },
+      "Position": {
+       "UDim2": [
+        [
+         0,
+         12
+        ],
+        [
+         0,
+         60
+        ]
+       ]
+      },
+      "BackgroundTransparency": 1,
+      "BorderSizePixel": 0,
+      "ScrollBarThickness": 6,
+      "CanvasSize": {
+       "UDim2": [
+        [
+         0,
+         0
+        ],
+        [
+         0,
+         0
+        ]
+       ]
+      },
+      "AutomaticCanvasSize": {
+       "Enum": 2
+      }
+     },
+     "children": [
+      {
+       "name": "Layout",
+       "className": "UIListLayout",
+       "properties": {
+        "SortOrder": {
+         "Enum": 2
+        },
+        "Padding": {
+         "UDim": [
+          0,
+          8
+         ]
+        }
+       }
+      }
+     ]
+    },
+    {
+     "name": "HeaderTemplate",
+     "className": "TextLabel",
+     "properties": {
+      "Size": {
+       "UDim2": [
+        [
+         1,
+         -8
+        ],
+        [
+         0,
+         26
+        ]
+       ]
+      },
+      "Position": {
+       "UDim2": [
+        [
+         0,
+         0
+        ],
+        [
+         0,
+         0
+        ]
+       ]
+      },
+      "AnchorPoint": {
+       "Vector2": [
+        0,
+        0
+       ]
+      },
+      "BorderSizePixel": 0,
+      "BackgroundColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      },
+      "BackgroundTransparency": 1.0,
+      "FontFace": {
+       "Font": {
+        "family": "rbxasset://fonts/families/FredokaOne.json",
+        "weight": "Regular",
+        "style": "Normal"
+       }
+      },
+      "Text": "SECTION",
+      "TextColor3": {
+       "Color3": [
+        0.78431,
+        0.62745,
+        1.0
+       ]
+      },
+      "TextScaled": true,
+      "TextStrokeTransparency": 0.3,
+      "TextStrokeColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      },
+      "Visible": false,
+      "TextXAlignment": {
+       "Enum": 0
+      }
+     }
+    },
+    {
+     "name": "ItemTemplate",
+     "className": "Frame",
+     "properties": {
+      "Size": {
+       "UDim2": [
+        [
+         1,
+         -8
+        ],
+        [
+         0,
+         72
+        ]
+       ]
+      },
+      "Position": {
+       "UDim2": [
+        [
+         0,
+         0
+        ],
+        [
+         0,
+         0
+        ]
+       ]
+      },
+      "AnchorPoint": {
+       "Vector2": [
+        0,
+        0
+       ]
+      },
+      "BorderSizePixel": 0,
+      "BackgroundColor3": {
+       "Color3": [
+        0.19608,
+        0.13725,
+        0.31373
+       ]
+      },
+      "BackgroundTransparency": 0.0,
+      "Visible": false
+     },
+     "children": [
+      {
+       "name": "Corner",
+       "className": "UICorner",
+       "properties": {
+        "CornerRadius": {
+         "UDim": [
+          0,
+          10
+         ]
+        }
+       }
+      },
+      {
+       "name": "ItemName",
+       "className": "TextLabel",
+       "properties": {
+        "Size": {
+         "UDim2": [
+          [
+           0.62,
+           -12
+          ],
+          [
+           0,
+           30
+          ]
+         ]
+        },
+        "Position": {
+         "UDim2": [
+          [
+           0,
+           12
+          ],
+          [
+           0,
+           6
+          ]
+         ]
+        },
+        "AnchorPoint": {
+         "Vector2": [
+          0,
+          0
+         ]
+        },
+        "BorderSizePixel": 0,
+        "BackgroundColor3": {
+         "Color3": [
+          0.0,
+          0.0,
+          0.0
+         ]
+        },
+        "BackgroundTransparency": 1.0,
+        "FontFace": {
+         "Font": {
+          "family": "rbxasset://fonts/families/FredokaOne.json",
+          "weight": "Regular",
+          "style": "Normal"
+         }
+        },
+        "Text": "Item",
+        "TextColor3": {
+         "Color3": [
+          1.0,
+          1.0,
+          1.0
+         ]
+        },
+        "TextScaled": true,
+        "TextStrokeTransparency": 0.3,
+        "TextStrokeColor3": {
+         "Color3": [
+          0.0,
+          0.0,
+          0.0
+         ]
+        },
+        "TextXAlignment": {
+         "Enum": 0
+        }
+       }
+      },
+      {
+       "name": "Description",
+       "className": "TextLabel",
+       "properties": {
+        "Size": {
+         "UDim2": [
+          [
+           0.62,
+           -12
+          ],
+          [
+           0,
+           26
+          ]
+         ]
+        },
+        "Position": {
+         "UDim2": [
+          [
+           0,
+           12
+          ],
+          [
+           0,
+           38
+          ]
+         ]
+        },
+        "AnchorPoint": {
+         "Vector2": [
+          0,
+          0
+         ]
+        },
+        "BorderSizePixel": 0,
+        "BackgroundColor3": {
+         "Color3": [
+          0.0,
+          0.0,
+          0.0
+         ]
+        },
+        "BackgroundTransparency": 1.0,
+        "FontFace": {
+         "Font": {
+          "family": "rbxasset://fonts/families/GothamSSm.json",
+          "weight": "Medium",
+          "style": "Normal"
+         }
+        },
+        "Text": "Description",
+        "TextColor3": {
+         "Color3": [
+          0.78431,
+          0.78431,
+          0.86275
+         ]
+        },
+        "TextScaled": true,
+        "TextStrokeTransparency": 0.3,
+        "TextStrokeColor3": {
+         "Color3": [
+          0.0,
+          0.0,
+          0.0
+         ]
+        },
+        "TextXAlignment": {
+         "Enum": 0
+        }
+       }
+      },
+      {
+       "name": "Buy",
+       "className": "TextButton",
+       "properties": {
+        "Size": {
+         "UDim2": [
+          [
+           0.34,
+           0
+          ],
+          [
+           0,
+           46
+          ]
+         ]
+        },
+        "Position": {
+         "UDim2": [
+          [
+           1,
+           -10
+          ],
+          [
+           0.5,
+           0
+          ]
+         ]
+        },
+        "AnchorPoint": {
+         "Vector2": [
+          1,
+          0.5
+         ]
+        },
+        "BorderSizePixel": 0,
+        "BackgroundColor3": {
+         "Color3": [
+          0.23529,
+          0.7451,
+          0.35294
+         ]
+        },
+        "FontFace": {
+         "Font": {
+          "family": "rbxasset://fonts/families/FredokaOne.json",
+          "weight": "Regular",
+          "style": "Normal"
+         }
+        },
+        "Text": "BUY",
+        "TextColor3": {
+         "Color3": [
+          1.0,
+          1.0,
+          1.0
+         ]
+        },
+        "TextScaled": true
+       },
+       "children": [
+        {
+         "name": "Corner",
+         "className": "UICorner",
+         "properties": {
+          "CornerRadius": {
+           "UDim": [
+            0,
+            10
+           ]
+          }
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

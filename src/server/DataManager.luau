@@ -55,7 +55,7 @@ local function defaultData()
 		Cash = Config.StartingCash,
 		Steals = 0,
 		Speed = 0,
-		Eggs = {}, -- [slotIndex: number] = eggId
+		Eggs = {}, -- [slotIndex: number] = "EggId" or "EggId:Mutation"
 	}
 end
 
@@ -81,17 +81,11 @@ local function sanitize(raw)
 	end
 
 	if type(raw.Eggs) == "table" then
-		for key, eggId in raw.Eggs do
+		for key, saved in raw.Eggs do
 			local index = tonumber(key)
-			if
-				index
-				and index == math.floor(index)
-				and index >= 1
-				and index <= Config.SlotsPerPlot
-				and type(eggId) == "string"
-				and Config.GetEgg(eggId) ~= nil
-			then
-				data.Eggs[index] = eggId
+			local eggId, mutationName = Config.DecodeEgg(saved)
+			if index and index == math.floor(index) and index >= 1 and index <= Config.SlotsPerPlot and eggId then
+				data.Eggs[index] = Config.EncodeEgg(eggId, mutationName) -- e.g. "DragonAura:Storm"
 			end
 		end
 	end

@@ -54,6 +54,12 @@
     },
     "StarterPack": {
       "$className": "StarterPack"
+    },
+    "StarterGui": {
+      "$className": "StarterGui",
+      "AuraEggHud": {
+        "$path": "gui/AuraEggHud.model.json"
+      }
     }
   }
 }

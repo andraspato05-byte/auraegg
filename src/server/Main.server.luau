@@ -19,6 +19,7 @@ local PlotService = require(Server.PlotService)
 local ConveyorService = require(Server.ConveyorService)
 local BatService = require(Server.BatService)
 local TreadmillService = require(Server.TreadmillService)
+local EventService = require(Server.EventService)
 local MonetizationService = require(Server.MonetizationService)
 
 ------------------------------------------------------------------------------
@@ -39,6 +40,7 @@ end
 -- Build everything before any character can fall into the void.
 local world = MapBuilder.Build()
 PlotService.Init(world.Plots)
+EventService.Init()
 ConveyorService.Init(world.Belt)
 BatService.Init()
 TreadmillService.Init(world.Treadmills)

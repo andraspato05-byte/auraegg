@@ -27,6 +27,7 @@ end
 
 Remotes.NotifyEvent = getOrCreate("Notify") -- (text: string, color: Color3)
 Remotes.KnockbackEvent = getOrCreate("Knockback") -- (velocity: Vector3)
+Remotes.StartEventEvent = getOrCreate("StartEvent") -- client -> server, Studio test only
 
 folder.Parent = ReplicatedStorage
 
