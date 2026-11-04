@@ -3,6 +3,13 @@
 	Builds the 3D model for an Aura Egg: an egg-shaped core, a glowing band,
 	an aura shell, sparkle particles and a light. Higher rarities are
 	bigger and glow more. Secret eggs get a rainbow aura (animated by the client).
+
+	Also shared with PetVisuals: the aura effects (AddEffects) and the floating
+	name tag (AddInfo).
+
+	Every item model gets these attributes: EggId, Mutation (optional),
+	Hatched (true for animals), BottomOffset (studs from the core's centre down
+	to the model's bottom) and TopOffset (from the centre up to the top).
 ]]
 
 local CollectionService = game:GetService("CollectionService")
@@ -22,7 +29,7 @@ local RAINBOW = ColorSequence.new({
 	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 60, 200)),
 })
 
-local function makeEllipsoid(name, size, color, material, transparency, anchored)
+function EggVisuals.MakeEllipsoid(name, size, color, material, transparency, anchored)
 	local part = Instance.new("Part")
 	part.Name = name
 	part.Size = size
@@ -37,68 +44,46 @@ local function makeEllipsoid(name, size, color, material, transparency, anchored
 	part.BottomSurface = Enum.SurfaceType.Smooth
 
 	local mesh = Instance.new("SpecialMesh")
-	mesh.MeshType = Enum.MeshType.Sphere -- a Sphere SpecialMesh stretches to the part size, giving an egg shape
+	mesh.MeshType = Enum.MeshType.Sphere -- a Sphere SpecialMesh stretches to the part size
 	mesh.Parent = part
 	return part
 end
 
-local function weld(part0, part1)
+function EggVisuals.Weld(part0, part1)
 	local constraint = Instance.new("WeldConstraint")
 	constraint.Part0 = part0
 	constraint.Part1 = part1
 	constraint.Parent = part1
 end
 
--- Returns model, eggDefinition, corePart. The model's PrimaryPart is the core.
--- mutationName (optional), e.g. "Storm", adds the mutation's look.
-function EggVisuals.Create(eggId, anchored, mutationName)
-	local def = Config.GetEgg(eggId)
-	assert(def, "Unknown egg id: " .. tostring(eggId))
+-- Rarity scale used for eggs and animals: Common 1.0 ... Secret 1.6
+function EggVisuals.RarityScale(def)
+	return 1 + 0.1 * (Config.GetRarity(def.Rarity).Index - 1)
+end
+
+-- Aura shell, sparkles, light and mutation effects around `core`.
+-- shellSize = size of the glowing aura ellipsoid (centred on the core).
+function EggVisuals.AddEffects(model, core, def, mutationName, shellSize, anchored)
 	local rarity = Config.GetRarity(def.Rarity)
-	local scale = 1 + 0.1 * (rarity.Index - 1)
+	local scale = EggVisuals.RarityScale(def)
+	local mutation = Config.GetMutation(mutationName)
 	local isSecret = def.Rarity == "Secret"
 
-	local model = Instance.new("Model")
-	local mutation = Config.GetMutation(mutationName)
-	model.Name = Config.GetEggDisplayName(def.Id, mutationName)
-	model:SetAttribute("EggId", def.Id)
-	if mutation then
-		model:SetAttribute("Mutation", mutation.Name)
-	end
-
-	local core = makeEllipsoid("Core", BASE_SIZE * scale, def.EggColor, Enum.Material.SmoothPlastic, 0, anchored)
-	core.CastShadow = true
-	core.CFrame = CFrame.new()
-	core.Parent = model
-
-	local band = makeEllipsoid(
-		"Band",
-		Vector3.new(core.Size.X * 1.04, 0.45 * scale, core.Size.Z * 1.04),
-		def.AuraColor,
-		Enum.Material.Neon,
-		0,
-		anchored
-	)
-	band.CFrame = CFrame.new(0, -0.15 * scale, 0)
-	band.Parent = model
-	weld(core, band)
-
 	local strongAura = rarity.Index >= 4 -- Epic and above get the shimmering force-field aura
-	local shell = makeEllipsoid(
+	local shell = EggVisuals.MakeEllipsoid(
 		"Aura",
-		core.Size * 1.35,
+		shellSize,
 		def.AuraColor,
 		strongAura and Enum.Material.ForceField or Enum.Material.Neon,
 		strongAura and 0 or 0.82,
 		anchored
 	)
-	shell.CFrame = CFrame.new()
+	shell.CanQuery = false
+	shell.CFrame = CFrame.new(core.Position)
 	shell.Parent = model
-	weld(core, shell)
-
+	EggVisuals.Weld(core, shell)
 	if isSecret then
 		CollectionService:AddTag(shell, "RainbowAura")
-		CollectionService:AddTag(band, "RainbowAura")
 	end
 
 	local attachment = Instance.new("Attachment")
@@ -134,17 +119,18 @@ function EggVisuals.Create(eggId, anchored, mutationName)
 
 	if mutation then
 		-- Storm-charged: an electric outer shell, crackling sparks and a blue glow
-		local stormShell = makeEllipsoid(
+		local stormShell = EggVisuals.MakeEllipsoid(
 			"MutationAura",
-			core.Size * 1.6,
+			shellSize * 1.2,
 			mutation.Color,
 			Enum.Material.ForceField,
 			0,
 			anchored
 		)
-		stormShell.CFrame = CFrame.new()
+		stormShell.CanQuery = false
+		stormShell.CFrame = CFrame.new(core.Position)
 		stormShell.Parent = model
-		weld(core, stormShell)
+		EggVisuals.Weld(core, stormShell)
 
 		local sparks = Instance.new("ParticleEmitter")
 		sparks.Name = "MutationSparks"
@@ -168,6 +154,53 @@ function EggVisuals.Create(eggId, anchored, mutationName)
 		stormLight.Shadows = false
 		stormLight.Parent = core
 	end
+end
+
+-- Sets the attributes every item model carries.
+function EggVisuals.Tag(model, def, mutationName, hatched, bottomOffset, topOffset)
+	local mutation = Config.GetMutation(mutationName)
+	model.Name = Config.GetEggDisplayName(def.Id, mutationName, hatched)
+	model:SetAttribute("EggId", def.Id)
+	model:SetAttribute("Hatched", hatched == true)
+	if mutation then
+		model:SetAttribute("Mutation", mutation.Name)
+	end
+	model:SetAttribute("BottomOffset", bottomOffset)
+	model:SetAttribute("TopOffset", topOffset)
+end
+
+-- Returns model, eggDefinition, corePart. The model's PrimaryPart is the core.
+-- mutationName (optional), e.g. "Storm", adds the mutation's look.
+function EggVisuals.Create(eggId, anchored, mutationName)
+	local def = Config.GetEgg(eggId)
+	assert(def, "Unknown egg id: " .. tostring(eggId))
+	local scale = EggVisuals.RarityScale(def)
+
+	local model = Instance.new("Model")
+
+	local core =
+		EggVisuals.MakeEllipsoid("Core", BASE_SIZE * scale, def.EggColor, Enum.Material.SmoothPlastic, 0, anchored)
+	core.CastShadow = true
+	core.CFrame = CFrame.new()
+	core.Parent = model
+
+	local band = EggVisuals.MakeEllipsoid(
+		"Band",
+		Vector3.new(core.Size.X * 1.04, 0.45 * scale, core.Size.Z * 1.04),
+		def.AuraColor,
+		Enum.Material.Neon,
+		0,
+		anchored
+	)
+	band.CFrame = CFrame.new(0, -0.15 * scale, 0)
+	band.Parent = model
+	EggVisuals.Weld(core, band)
+	if def.Rarity == "Secret" then
+		CollectionService:AddTag(band, "RainbowAura")
+	end
+
+	EggVisuals.AddEffects(model, core, def, mutationName, core.Size * 1.35, anchored)
+	EggVisuals.Tag(model, def, mutationName, false, core.Size.Y / 2, core.Size.Y / 2)
 
 	model.PrimaryPart = core
 	return model, def, core
@@ -192,24 +225,27 @@ local function addLine(gui, text, color, index, count, rainbow)
 	return label
 end
 
--- Adds the floating name / rarity / income text above an egg.
--- extraText (optional) adds one more line, e.g. the price on the belt.
+-- Adds the floating name / rarity / income text above an egg or animal.
+-- extraText (optional) adds one more line, e.g. the price on the belt or the hatch timer.
+-- Returns the BillboardGui and the extra line's TextLabel (nil without extraText).
 function EggVisuals.AddInfo(model, extraText, extraColor)
 	local core = model.PrimaryPart
 	local def = Config.GetEgg(model:GetAttribute("EggId"))
 	local rarity = Config.GetRarity(def.Rarity)
 	local mutationName = model:GetAttribute("Mutation")
 	local mutation = Config.GetMutation(mutationName)
+	local hatched = model:GetAttribute("Hatched") == true
+	local topOffset = model:GetAttribute("TopOffset") or core.Size.Y / 2
 
 	local lines = {
-		{ def.Name, Color3.fromRGB(255, 255, 255), false },
-		{ def.Rarity, rarity.Color, def.Rarity == "Secret" },
+		{ hatched and def.PetName or def.Name, Color3.fromRGB(255, 255, 255), false },
+		{ def.Rarity .. (hatched and " Animal" or ""), rarity.Color, def.Rarity == "Secret" },
 	}
 	if mutation then
 		table.insert(lines, { string.upper(mutation.Name) .. " x" .. mutation.IncomeMultiplier, mutation.Color, false })
 	end
 	table.insert(lines, {
-		Config.FormatCash(Config.GetEggIncome(def.Id, mutationName)) .. "/s",
+		Config.FormatCash(Config.GetEggIncome(def.Id, mutationName, hatched)) .. "/s",
 		Color3.fromRGB(110, 255, 140),
 		false,
 	})
@@ -221,17 +257,21 @@ function EggVisuals.AddInfo(model, extraText, extraColor)
 	gui.Name = "EggInfo"
 	gui.Adornee = core
 	gui.Size = UDim2.new(7, 0, 0.8 * #lines, 0) -- scale = studs for BillboardGuis
-	gui.StudsOffset = Vector3.new(0, core.Size.Y / 2 + 0.6 + 0.4 * #lines, 0)
+	gui.StudsOffset = Vector3.new(0, topOffset + 0.6 + 0.4 * #lines, 0)
 	gui.AlwaysOnTop = false
 	gui.LightInfluence = 0
 	gui.MaxDistance = 70
 
+	local extraLabel = nil
 	for index, line in lines do
-		addLine(gui, line[1], line[2], index, #lines, line[3])
+		local label = addLine(gui, line[1], line[2], index, #lines, line[3])
+		if extraText and index == #lines then
+			extraLabel = label
+		end
 	end
 
 	gui.Parent = core
-	return gui
+	return gui, extraLabel
 end
 
 return EggVisuals

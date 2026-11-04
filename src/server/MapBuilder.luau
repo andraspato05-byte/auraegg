@@ -8,8 +8,8 @@
 	If you edit the map in Studio, keep these names:
 	  Workspace.Map.ConveyorBelt, Workspace.Map.AuraEggMachine, Workspace.Map.TitleAnchor
 	  Workspace.Plots.Plot1 .. Plot8, each containing:
-	    Origin, LockBarrier, SignAnchor, LockPad, Eggs,
-	    Pedestal1 .. Pedestal10, CashPad1 .. CashPad10
+	    Origin, LockBarrier, SignAnchor, LockPad, UpgradeTerminal, Eggs,
+	    Pedestal1 .. Pedestal10, PedestalRim1 .. PedestalRim10, CashPad1 .. CashPad10
 	  Treadmill models (attribute Tier = 1..4) with a part named Belt
 ]]
 
@@ -70,6 +70,7 @@ local function loadPlot(index, plotsFolder)
 	for slotIndex = 1, Config.SlotsPerPlot do
 		local pedestal = need(model, "Pedestal" .. slotIndex)
 		local pad = need(model, "CashPad" .. slotIndex)
+		local rim = need(model, "PedestalRim" .. slotIndex)
 		local pedestalLocal = plotCFrame:PointToObjectSpace(pedestal.Position)
 		slots[slotIndex] = {
 			Pedestal = pedestal,
@@ -77,10 +78,15 @@ local function loadPlot(index, plotsFolder)
 			EggBaseCFrame = plotCFrame * CFrame.new(pedestalLocal.X, pedestalLocal.Y + pedestal.Size.Y / 2, pedestalLocal.Z),
 			PadLocal = plotCFrame:PointToObjectSpace(pad.Position),
 			PadLabel = newBillboard(pad, 5, 1.4, Vector3.new(0, 2.2, 0), "", Color3.fromRGB(120, 255, 140), 60),
+			Pad = pad,
+			PadColor = pad.Color,
+			Rim = rim,
+			RimColor = rim.Color,
 		}
 	end
 
 	local lockPad = need(model, "LockPad")
+	local upgradeTerminal = need(model, "UpgradeTerminal")
 	local eggsFolder = model:FindFirstChild("Eggs")
 	if not eggsFolder then
 		eggsFolder = Instance.new("Folder")
@@ -103,6 +109,9 @@ local function loadPlot(index, plotsFolder)
 		LockPadLocal = plotCFrame:PointToObjectSpace(lockPad.Position),
 		LockLabel = newBillboard(lockPad, 8, 1.6, Vector3.new(0, 2.5, 0), "", Color3.fromRGB(255, 255, 255), 80),
 		EggsFolder = eggsFolder,
+		UpgradeTerminal = upgradeTerminal,
+		UpgradeLabel = newBillboard(upgradeTerminal, 12, 2.6, Vector3.new(0, 4, 0), "", Color3.fromRGB(255, 220, 90), 60),
+		UpgradePrompt = nil, -- created by PlotService
 		SpawnCFrame = plotCFrame * CFrame.new(0, 4, 6), -- facing the entrance
 		EjectCFrame = plotCFrame * CFrame.new(0, 4, -38), -- just outside the entrance, on the walkway
 	}

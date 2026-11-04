@@ -36,6 +36,11 @@ function Session.Create(player)
 	speedValue.Value = 0
 	speedValue.Parent = leaderstats
 
+	local sizeValue = Instance.new("IntValue")
+	sizeValue.Name = "Size" -- percent: 100 = normal, 250 = max
+	sizeValue.Value = 100
+	sizeValue.Parent = leaderstats
+
 	leaderstats.Parent = player
 
 	local session = {
@@ -43,6 +48,7 @@ function Session.Create(player)
 		Cash = 0,
 		Steals = 0,
 		Speed = 0, -- treadmill Speed points (can be fractional; leaderstats shows the whole number)
+		BaseLevel = 1, -- base upgrade level (see Config.BaseUpgrades)
 		Loaded = false, -- true once saved data has been applied
 		CanSave = false, -- false if loading failed, so we never overwrite real data
 		SavedEggs = nil, -- eggs kept aside while the player is waiting for a free base
@@ -50,6 +56,7 @@ function Session.Create(player)
 		CashValue = cashValue,
 		StealsValue = stealsValue,
 		SpeedValue = speedValue,
+		SizeValue = sizeValue,
 	}
 	sessions[player] = session
 	return session

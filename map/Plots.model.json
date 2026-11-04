@@ -803,7 +803,7 @@
       "Size": {
        "Vector3": [
         14,
-        7,
+        5,
         0.3
        ]
       },
@@ -811,7 +811,7 @@
        "CFrame": {
         "position": [
          -112.5,
-         7.5,
+         9.5,
          -76.85
         ],
         "orientation": [
@@ -849,6 +849,119 @@
       "BottomSurface": {
        "Enum": 0
       }
+     }
+    },
+    {
+     "name": "UpgradeTerminal",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        6,
+        4,
+        1.4
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         -97.5,
+         3.0,
+         -23.7
+        ],
+        "orientation": [
+         [
+          -1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          -1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        0.21569,
+        0.21569,
+        0.27451
+       ]
+      },
+      "Material": {
+       "Enum": 1088
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      }
+     }
+    },
+    {
+     "name": "UpgradeScreen",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        5,
+        2.4,
+        0.2
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         -97.5,
+         3.4,
+         -24.45
+        ],
+        "orientation": [
+         [
+          -1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          -1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        1.0,
+        0.78431,
+        0.23529
+       ]
+      },
+      "Material": {
+       "Enum": 288
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      },
+      "CanCollide": false
      }
     },
     {
@@ -4305,7 +4418,7 @@
       "Size": {
        "Vector3": [
         14,
-        7,
+        5,
         0.3
        ]
       },
@@ -4313,7 +4426,7 @@
        "CFrame": {
         "position": [
          -37.5,
-         7.5,
+         9.5,
          -76.85
         ],
         "orientation": [
@@ -4351,6 +4464,119 @@
       "BottomSurface": {
        "Enum": 0
       }
+     }
+    },
+    {
+     "name": "UpgradeTerminal",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        6,
+        4,
+        1.4
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         -22.5,
+         3.0,
+         -23.7
+        ],
+        "orientation": [
+         [
+          -1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          -1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        0.21569,
+        0.21569,
+        0.27451
+       ]
+      },
+      "Material": {
+       "Enum": 1088
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      }
+     }
+    },
+    {
+     "name": "UpgradeScreen",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        5,
+        2.4,
+        0.2
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         -22.5,
+         3.4,
+         -24.45
+        ],
+        "orientation": [
+         [
+          -1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          -1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        1.0,
+        0.78431,
+        0.23529
+       ]
+      },
+      "Material": {
+       "Enum": 288
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      },
+      "CanCollide": false
      }
     },
     {
@@ -7807,7 +8033,7 @@
       "Size": {
        "Vector3": [
         14,
-        7,
+        5,
         0.3
        ]
       },
@@ -7815,7 +8041,7 @@
        "CFrame": {
         "position": [
          37.5,
-         7.5,
+         9.5,
          -76.85
         ],
         "orientation": [
@@ -7853,6 +8079,119 @@
       "BottomSurface": {
        "Enum": 0
       }
+     }
+    },
+    {
+     "name": "UpgradeTerminal",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        6,
+        4,
+        1.4
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         52.5,
+         3.0,
+         -23.7
+        ],
+        "orientation": [
+         [
+          -1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          -1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        0.21569,
+        0.21569,
+        0.27451
+       ]
+      },
+      "Material": {
+       "Enum": 1088
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      }
+     }
+    },
+    {
+     "name": "UpgradeScreen",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        5,
+        2.4,
+        0.2
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         52.5,
+         3.4,
+         -24.45
+        ],
+        "orientation": [
+         [
+          -1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          -1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        1.0,
+        0.78431,
+        0.23529
+       ]
+      },
+      "Material": {
+       "Enum": 288
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      },
+      "CanCollide": false
      }
     },
     {
@@ -11309,7 +11648,7 @@
       "Size": {
        "Vector3": [
         14,
-        7,
+        5,
         0.3
        ]
       },
@@ -11317,7 +11656,7 @@
        "CFrame": {
         "position": [
          112.5,
-         7.5,
+         9.5,
          -76.85
         ],
         "orientation": [
@@ -11355,6 +11694,119 @@
       "BottomSurface": {
        "Enum": 0
       }
+     }
+    },
+    {
+     "name": "UpgradeTerminal",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        6,
+        4,
+        1.4
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         127.5,
+         3.0,
+         -23.7
+        ],
+        "orientation": [
+         [
+          -1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          -1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        0.21569,
+        0.21569,
+        0.27451
+       ]
+      },
+      "Material": {
+       "Enum": 1088
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      }
+     }
+    },
+    {
+     "name": "UpgradeScreen",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        5,
+        2.4,
+        0.2
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         127.5,
+         3.4,
+         -24.45
+        ],
+        "orientation": [
+         [
+          -1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          -1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        1.0,
+        0.78431,
+        0.23529
+       ]
+      },
+      "Material": {
+       "Enum": 288
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      },
+      "CanCollide": false
      }
     },
     {
@@ -14811,7 +15263,7 @@
       "Size": {
        "Vector3": [
         14,
-        7,
+        5,
         0.3
        ]
       },
@@ -14819,7 +15271,7 @@
        "CFrame": {
         "position": [
          -112.5,
-         7.5,
+         9.5,
          76.85
         ],
         "orientation": [
@@ -14857,6 +15309,119 @@
       "BottomSurface": {
        "Enum": 0
       }
+     }
+    },
+    {
+     "name": "UpgradeTerminal",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        6,
+        4,
+        1.4
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         -127.5,
+         3.0,
+         23.7
+        ],
+        "orientation": [
+         [
+          1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        0.21569,
+        0.21569,
+        0.27451
+       ]
+      },
+      "Material": {
+       "Enum": 1088
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      }
+     }
+    },
+    {
+     "name": "UpgradeScreen",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        5,
+        2.4,
+        0.2
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         -127.5,
+         3.4,
+         24.45
+        ],
+        "orientation": [
+         [
+          1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        1.0,
+        0.78431,
+        0.23529
+       ]
+      },
+      "Material": {
+       "Enum": 288
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      },
+      "CanCollide": false
      }
     },
     {
@@ -18313,7 +18878,7 @@
       "Size": {
        "Vector3": [
         14,
-        7,
+        5,
         0.3
        ]
       },
@@ -18321,7 +18886,7 @@
        "CFrame": {
         "position": [
          -37.5,
-         7.5,
+         9.5,
          76.85
         ],
         "orientation": [
@@ -18359,6 +18924,119 @@
       "BottomSurface": {
        "Enum": 0
       }
+     }
+    },
+    {
+     "name": "UpgradeTerminal",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        6,
+        4,
+        1.4
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         -52.5,
+         3.0,
+         23.7
+        ],
+        "orientation": [
+         [
+          1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        0.21569,
+        0.21569,
+        0.27451
+       ]
+      },
+      "Material": {
+       "Enum": 1088
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      }
+     }
+    },
+    {
+     "name": "UpgradeScreen",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        5,
+        2.4,
+        0.2
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         -52.5,
+         3.4,
+         24.45
+        ],
+        "orientation": [
+         [
+          1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        1.0,
+        0.78431,
+        0.23529
+       ]
+      },
+      "Material": {
+       "Enum": 288
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      },
+      "CanCollide": false
      }
     },
     {
@@ -21815,7 +22493,7 @@
       "Size": {
        "Vector3": [
         14,
-        7,
+        5,
         0.3
        ]
       },
@@ -21823,7 +22501,7 @@
        "CFrame": {
         "position": [
          37.5,
-         7.5,
+         9.5,
          76.85
         ],
         "orientation": [
@@ -21861,6 +22539,119 @@
       "BottomSurface": {
        "Enum": 0
       }
+     }
+    },
+    {
+     "name": "UpgradeTerminal",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        6,
+        4,
+        1.4
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         22.5,
+         3.0,
+         23.7
+        ],
+        "orientation": [
+         [
+          1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        0.21569,
+        0.21569,
+        0.27451
+       ]
+      },
+      "Material": {
+       "Enum": 1088
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      }
+     }
+    },
+    {
+     "name": "UpgradeScreen",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        5,
+        2.4,
+        0.2
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         22.5,
+         3.4,
+         24.45
+        ],
+        "orientation": [
+         [
+          1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        1.0,
+        0.78431,
+        0.23529
+       ]
+      },
+      "Material": {
+       "Enum": 288
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      },
+      "CanCollide": false
      }
     },
     {
@@ -25317,7 +26108,7 @@
       "Size": {
        "Vector3": [
         14,
-        7,
+        5,
         0.3
        ]
       },
@@ -25325,7 +26116,7 @@
        "CFrame": {
         "position": [
          112.5,
-         7.5,
+         9.5,
          76.85
         ],
         "orientation": [
@@ -25363,6 +26154,119 @@
       "BottomSurface": {
        "Enum": 0
       }
+     }
+    },
+    {
+     "name": "UpgradeTerminal",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        6,
+        4,
+        1.4
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         97.5,
+         3.0,
+         23.7
+        ],
+        "orientation": [
+         [
+          1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        0.21569,
+        0.21569,
+        0.27451
+       ]
+      },
+      "Material": {
+       "Enum": 1088
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      }
+     }
+    },
+    {
+     "name": "UpgradeScreen",
+     "className": "Part",
+     "properties": {
+      "Anchored": true,
+      "Size": {
+       "Vector3": [
+        5,
+        2.4,
+        0.2
+       ]
+      },
+      "CFrame": {
+       "CFrame": {
+        "position": [
+         97.5,
+         3.4,
+         24.45
+        ],
+        "orientation": [
+         [
+          1.0,
+          0.0,
+          0.0
+         ],
+         [
+          0.0,
+          1.0,
+          0.0
+         ],
+         [
+          0.0,
+          0.0,
+          1.0
+         ]
+        ]
+       }
+      },
+      "Color": {
+       "Color3": [
+        1.0,
+        0.78431,
+        0.23529
+       ]
+      },
+      "Material": {
+       "Enum": 288
+      },
+      "TopSurface": {
+       "Enum": 0
+      },
+      "BottomSurface": {
+       "Enum": 0
+      },
+      "CanCollide": false
      }
     },
     {

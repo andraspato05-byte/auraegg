@@ -55,7 +55,8 @@ local function defaultData()
 		Cash = Config.StartingCash,
 		Steals = 0,
 		Speed = 0,
-		Eggs = {}, -- [slotIndex: number] = "EggId" or "EggId:Mutation"
+		BaseLevel = 1,
+		Eggs = {}, -- [slotIndex: number] = saved item, see Config.EncodeEgg
 	}
 end
 
@@ -76,6 +77,9 @@ local function sanitize(raw)
 	if isValidCount(raw.Steals) then
 		data.Steals = math.floor(raw.Steals)
 	end
+	if isValidCount(raw.BaseLevel) then
+		data.BaseLevel = math.clamp(math.floor(raw.BaseLevel), 1, #Config.BaseUpgrades)
+	end
 	if isValidCount(raw.Speed) then
 		data.Speed = math.min(raw.Speed, Config.MaxSpeed)
 	end
@@ -83,9 +87,9 @@ local function sanitize(raw)
 	if type(raw.Eggs) == "table" then
 		for key, saved in raw.Eggs do
 			local index = tonumber(key)
-			local eggId, mutationName = Config.DecodeEgg(saved)
+			local eggId, mutationName, hatched, hatchLeft = Config.DecodeEgg(saved)
 			if index and index == math.floor(index) and index >= 1 and index <= Config.SlotsPerPlot and eggId then
-				data.Eggs[index] = Config.EncodeEgg(eggId, mutationName) -- e.g. "DragonAura:Storm"
+				data.Eggs[index] = Config.EncodeEgg(eggId, mutationName, hatched, hatchLeft)
 			end
 		end
 	end
@@ -191,6 +195,7 @@ local function write(userId, job)
 					Cash = job.Data.Cash,
 					Steals = job.Data.Steals,
 					Speed = job.Data.Speed,
+					BaseLevel = job.Data.BaseLevel,
 					Eggs = job.Data.Eggs,
 				}
 				if not job.Release then

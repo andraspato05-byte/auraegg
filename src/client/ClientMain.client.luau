@@ -19,6 +19,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
@@ -26,6 +27,7 @@ local remotes = ReplicatedStorage:WaitForChild("Remotes")
 local notifyEvent = remotes:WaitForChild("Notify")
 local knockbackEvent = remotes:WaitForChild("Knockback")
 local startEventRemote = remotes:WaitForChild("StartEvent")
+local mogRemote = remotes:WaitForChild("Mog")
 
 local hud = player:WaitForChild("PlayerGui"):WaitForChild("AuraEggHud")
 
@@ -33,6 +35,7 @@ local cashPanel = hud:WaitForChild("CashPanel")
 local cashLabel = cashPanel:WaitForChild("Cash")
 local incomeLabel = cashPanel:WaitForChild("Income")
 local speedLabel = cashPanel:WaitForChild("Speed")
+local sizeLabel = cashPanel:WaitForChild("Size")
 local notifyHolder = hud:WaitForChild("Notifications")
 local carryBanner = hud:WaitForChild("CarryBanner")
 local tips = hud:WaitForChild("HowToPlay")
@@ -40,6 +43,7 @@ local shopButton = hud:WaitForChild("ShopButton")
 local shopPanel = hud:WaitForChild("ShopPanel")
 local eventBanner = hud:WaitForChild("EventBanner")
 local stormTestButton = hud:WaitForChild("StormTestButton")
+local mogButton = hud:WaitForChild("MogButton")
 
 ------------------------------------------------------------------------------
 -- How to play tips (fade out after a while)
@@ -93,6 +97,13 @@ task.spawn(function()
 	end
 	speed.Changed:Connect(refreshSpeed)
 	refreshSpeed()
+
+	local size = leaderstats:WaitForChild("Size")
+	local function refreshSize()
+		sizeLabel.Text = "Size " .. size.Value .. "%"
+	end
+	size.Changed:Connect(refreshSize)
+	refreshSize()
 end)
 
 ------------------------------------------------------------------------------
@@ -348,7 +359,7 @@ local function applyPrompt(prompt)
 	local isMine = prompt:GetAttribute("OwnerUserId") == player.UserId
 	if kind == "Steal" then
 		prompt.Enabled = not isMine
-	elseif kind == "Sell" then
+	elseif kind == "Sell" or kind == "Upgrade" then
 		prompt.Enabled = isMine
 	end
 end
@@ -469,5 +480,72 @@ RunService.RenderStepped:Connect(function()
 		-- the belt surface moves towards local +Z (the back of the treadmill)
 		local z = ((stripe.StartZ + half + t * stripe.Push) % length) - half
 		stripe.Part.CFrame = stripe.Belt.CFrame * CFrame.new(stripe.X, stripe.Y, z)
+	end
+end)
+
+------------------------------------------------------------------------------
+-- SIZE MOG: show the button when a smaller player is close enough
+------------------------------------------------------------------------------
+
+local mogTarget = nil
+local mogReadyAt = 0
+
+local function findMogTarget()
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	if not root then
+		return nil
+	end
+	local myScale = player:GetAttribute("Size") or 1
+	local range = Config.MogRange * myScale
+	local best, bestDistance = nil, math.huge
+	for _, other in Players:GetPlayers() do
+		if other ~= player then
+			local otherCharacter = other.Character
+			local otherRoot = otherCharacter and otherCharacter:FindFirstChild("HumanoidRootPart")
+			local otherHumanoid = otherCharacter and otherCharacter:FindFirstChildOfClass("Humanoid")
+			local theirScale = other:GetAttribute("Size") or 1
+			if otherRoot and otherHumanoid and otherHumanoid.Health > 0 and myScale - theirScale >= Config.MogMinLead then
+				local distance = (otherRoot.Position - root.Position).Magnitude
+				if distance <= range and distance < bestDistance then
+					best, bestDistance = other, distance
+				end
+			end
+		end
+	end
+	return best
+end
+
+local function tryMog()
+	if mogTarget and mogTarget.Parent == Players and os.clock() >= mogReadyAt then
+		mogRemote:FireServer(mogTarget)
+		mogReadyAt = os.clock() + Config.MogCooldown
+	end
+end
+
+task.spawn(function()
+	while true do
+		mogTarget = findMogTarget()
+		if mogTarget then
+			local remaining = mogReadyAt - os.clock()
+			mogButton.Visible = true
+			if remaining > 0 then
+				mogButton.Text = "MOG in " .. math.ceil(remaining) .. "s"
+				mogButton.BackgroundColor3 = Color3.fromRGB(120, 90, 110)
+			else
+				mogButton.Text = "MOG " .. mogTarget.DisplayName .. "! (G)"
+				mogButton.BackgroundColor3 = Color3.fromRGB(255, 70, 130)
+			end
+		else
+			mogButton.Visible = false
+		end
+		task.wait(0.2)
+	end
+end)
+
+mogButton.Activated:Connect(tryMog)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if not gameProcessed and input.KeyCode == Enum.KeyCode.G then
+		tryMog()
 	end
 end)

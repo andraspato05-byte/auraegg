@@ -9,7 +9,8 @@ map is visible and editable in Roblox Studio before pressing Play.
 The server scripts find things by name, so keep these names if you edit the
 map in Studio: Workspace.Map.ConveyorBelt, Workspace.Map.AuraEggMachine,
 Workspace.Map.TitleAnchor, Workspace.Plots.Plot1..Plot8 (each with Origin,
-LockBarrier, SignAnchor, Pedestal1..10, CashPad1..10, LockPad, Eggs) and
+LockBarrier, SignAnchor, Pedestal1..10, PedestalRim1..10, CashPad1..10, LockPad,
+UpgradeTerminal, Eggs) and
 Treadmill models (attribute Tier, child Belt).
 """
 
@@ -209,10 +210,10 @@ def build_belt():
     for x in range(-172, 173, 43):
         arch = []
         for z in (-9, 9):
-            arch.append(part("Pillar", (2, 14, 2), T(x, 7, z), (240, 238, 245), "Marble"))
+            arch.append(part("Pillar", (2, 19, 2), T(x, 9.5, z), (240, 238, 245), "Marble"))
             arch.append(part("PillarGlow", (2.3, 0.6, 2.3), T(x, 3, z), (180, 110, 255), "Neon"))
-        arch.append(part("Beam", (2.4, 1.8, 20.4), T(x, 14.9, 0), (240, 238, 245), "Marble"))
-        arch.append(part("BeamGlow", (2.6, 0.5, 18), T(x, 13.85, 0), (180, 110, 255), "Neon",
+        arch.append(part("Beam", (2.4, 1.8, 20.4), T(x, 19.9, 0), (240, 238, 245), "Marble"))
+        arch.append(part("BeamGlow", (2.6, 0.5, 18), T(x, 18.85, 0), (180, 110, 255), "Neon",
                          children=[light(18, 1.4, (190, 130, 255))]))
         arches.append(model("Arch", arch))
     items.append(folder("RunwayArches", arches))
@@ -372,7 +373,10 @@ def build_plot(index, plot_cf):
         part("TrimRight", (1.4, 0.6, 56), L(27.5, 13.3, 0), color, "Neon"),
         part("TrimFrontLeft", (20, 0.6, 1.4), L(-18, 13.3, -27.5), color, "Neon"),
         part("TrimFrontRight", (20, 0.6, 1.4), L(18, 13.3, -27.5), color, "Neon"),
-        part("Banner", (14, 7, 0.3), L(0, 7.5, 26.85), color, "Fabric"),
+        part("Banner", (14, 5, 0.3), L(0, 9.5, 26.85), color, "Fabric"),
+        # Upgrade terminal just inside the gate (left side), screen facing into the base
+        part("UpgradeTerminal", (6, 4, 1.4), L(-15, 3, -26.3), (55, 55, 70), "Metal"),
+        part("UpgradeScreen", (5, 2.4, 0.2), L(-15, 3.4, -25.55), (255, 200, 60), "Neon", collide=False),
         # Gate
         part("GatePillarLeft", (3, 16, 3), L(-9.5, 8, -27.5), stone, "Slate"),
         part("GatePillarRight", (3, 16, 3), L(9.5, 8, -27.5), stone, "Slate"),

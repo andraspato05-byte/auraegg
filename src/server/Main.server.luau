@@ -20,6 +20,7 @@ local ConveyorService = require(Server.ConveyorService)
 local BatService = require(Server.BatService)
 local TreadmillService = require(Server.TreadmillService)
 local EventService = require(Server.EventService)
+local SizeService = require(Server.SizeService)
 local MonetizationService = require(Server.MonetizationService)
 
 ------------------------------------------------------------------------------
@@ -44,6 +45,7 @@ EventService.Init()
 ConveyorService.Init(world.Belt)
 BatService.Init()
 TreadmillService.Init(world.Treadmills)
+SizeService.Init()
 MonetizationService.Init()
 
 ------------------------------------------------------------------------------
@@ -63,6 +65,7 @@ local function onCharacterAdded(player, character)
 	end)
 
 	PlotService.SetupCharacter(player, character)
+	SizeService.Refresh(player)
 	BatService.HookCharacter(player, character)
 	task.delay(1, BatService.EnsureBat, player)
 end

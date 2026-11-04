@@ -105,7 +105,9 @@ def build():
                            corner(14), stroke(rgb(180, 110, 255), 2),
                            label("Cash", "$0", udim2(1, -16, 0, 44), udim2(0, 8, 0, 4), rgb(120, 255, 140)),
                            label("Income", "+$0/s", udim2(1, -16, 0, 22), udim2(0, 8, 0, 48), rgb(255, 230, 120)),
-                           label("Speed", "Speed 0", udim2(1, -16, 0, 18), udim2(0, 8, 0, 70), rgb(120, 220, 255)),
+                           label("Speed", "Speed 0", udim2(0.62, -8, 0, 18), udim2(0, 8, 0, 70), rgb(120, 220, 255)),
+                           label("Size", "Size 100%", udim2(0.38, -8, 0, 18), udim2(0.62, 0, 0, 70),
+                                 rgb(255, 150, 200)),
                        ])
 
     notifications = frame("Notifications", udim2(0, 460, 0, 220), udim2(0.5, 0, 0, 168), transparency=1,
@@ -137,10 +139,13 @@ def build():
         "- Bonk thieves with your Aura Bat to get eggs back\n"
         "- Stand on the red pad to lock your base\n"
         "- Run on treadmills in the GYM to get faster\n"
+        "- Eggs hatch into animals that make you BIGGER\n"
+        "- Next to a smaller player? Press MOG (G)!\n"
+        "- Upgrade your base at the yellow terminal\n"
         "- AURA STORM event: rare + Storm eggs!\n"
         "- Press SHOP for Robux boosts"
     )
-    tips = label("HowToPlay", tips_text, udim2(0, 340, 0, 204), udim2(0, 12, 1, -12), white, anchor=(0, 1),
+    tips = label("HowToPlay", tips_text, udim2(0, 340, 0, 258), udim2(0, 12, 1, -12), white, anchor=(0, 1),
                  font=GOTHAM, scaled=False, bg=rgb(30, 20, 50), bg_transparency=0.25,
                  children=[corner(10), node("Padding", "UIPadding", {
                      "PaddingLeft": {"UDim": [0, 10]}, "PaddingRight": {"UDim": [0, 10]},
@@ -186,11 +191,15 @@ def build():
                         udim2(0, 12, 0.5, 50), rgb(70, 110, 220), white, anchor=(0, 0.5),
                         extra={"Visible": False}, children=[corner(8)])
 
+    mog_button = button("MogButton", "MOG! (G)", udim2(0, 190, 0, 64), udim2(1, -12, 0.5, 0), rgb(255, 70, 130),
+                        white, anchor=(1, 0.5), extra={"Visible": False},
+                        children=[corner(14), stroke(rgb(120, 0, 50), 3)])
+
     return {
         "className": "ScreenGui",
         "properties": {"ResetOnSpawn": False, "ZIndexBehavior": {"Enum": 1}},
         "children": [cash_panel, notifications, event_banner, carry_banner, tips, shop_button, storm_test,
-                     shop_panel],
+                     mog_button, shop_panel],
     }
 
 

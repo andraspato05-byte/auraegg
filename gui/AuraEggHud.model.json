@@ -226,8 +226,8 @@
       "Size": {
        "UDim2": [
         [
-         1,
-         -16
+         0.62,
+         -8
         ],
         [
          0,
@@ -275,6 +275,75 @@
         0.47059,
         0.86275,
         1.0
+       ]
+      },
+      "TextScaled": true,
+      "TextStrokeTransparency": 0.3,
+      "TextStrokeColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      }
+     }
+    },
+    {
+     "name": "Size",
+     "className": "TextLabel",
+     "properties": {
+      "Size": {
+       "UDim2": [
+        [
+         0.38,
+         -8
+        ],
+        [
+         0,
+         18
+        ]
+       ]
+      },
+      "Position": {
+       "UDim2": [
+        [
+         0.62,
+         0
+        ],
+        [
+         0,
+         70
+        ]
+       ]
+      },
+      "AnchorPoint": {
+       "Vector2": [
+        0,
+        0
+       ]
+      },
+      "BorderSizePixel": 0,
+      "BackgroundColor3": {
+       "Color3": [
+        0.0,
+        0.0,
+        0.0
+       ]
+      },
+      "BackgroundTransparency": 1.0,
+      "FontFace": {
+       "Font": {
+        "family": "rbxasset://fonts/families/FredokaOne.json",
+        "weight": "Regular",
+        "style": "Normal"
+       }
+      },
+      "Text": "Size 100%",
+      "TextColor3": {
+       "Color3": [
+        1.0,
+        0.58824,
+        0.78431
        ]
       },
       "TextScaled": true,
@@ -665,7 +734,7 @@
       ],
       [
        0,
-       204
+       258
       ]
      ]
     },
@@ -703,7 +772,7 @@
       "style": "Normal"
      }
     },
-    "Text": "HOW TO PLAY\n- Buy Aura Eggs from the conveyor belt (E)\n- Eggs on your base make cash every second\n- Stand on the green pads to collect the cash\n- Steal eggs from other bases (hold E) and run home\n- Bonk thieves with your Aura Bat to get eggs back\n- Stand on the red pad to lock your base\n- Run on treadmills in the GYM to get faster\n- AURA STORM event: rare + Storm eggs!\n- Press SHOP for Robux boosts",
+    "Text": "HOW TO PLAY\n- Buy Aura Eggs from the conveyor belt (E)\n- Eggs on your base make cash every second\n- Stand on the green pads to collect the cash\n- Steal eggs from other bases (hold E) and run home\n- Bonk thieves with your Aura Bat to get eggs back\n- Stand on the red pad to lock your base\n- Run on treadmills in the GYM to get faster\n- Eggs hatch into animals that make you BIGGER\n- Next to a smaller player? Press MOG (G)!\n- Upgrade your base at the yellow terminal\n- AURA STORM event: rare + Storm eggs!\n- Press SHOP for Robux boosts",
     "TextColor3": {
      "Color3": [
       1.0,
@@ -929,6 +998,98 @@
         0,
         8
        ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "MogButton",
+   "className": "TextButton",
+   "properties": {
+    "Size": {
+     "UDim2": [
+      [
+       0,
+       190
+      ],
+      [
+       0,
+       64
+      ]
+     ]
+    },
+    "Position": {
+     "UDim2": [
+      [
+       1,
+       -12
+      ],
+      [
+       0.5,
+       0
+      ]
+     ]
+    },
+    "AnchorPoint": {
+     "Vector2": [
+      1,
+      0.5
+     ]
+    },
+    "BorderSizePixel": 0,
+    "BackgroundColor3": {
+     "Color3": [
+      1.0,
+      0.27451,
+      0.5098
+     ]
+    },
+    "FontFace": {
+     "Font": {
+      "family": "rbxasset://fonts/families/FredokaOne.json",
+      "weight": "Regular",
+      "style": "Normal"
+     }
+    },
+    "Text": "MOG! (G)",
+    "TextColor3": {
+     "Color3": [
+      1.0,
+      1.0,
+      1.0
+     ]
+    },
+    "TextScaled": true,
+    "Visible": false
+   },
+   "children": [
+    {
+     "name": "Corner",
+     "className": "UICorner",
+     "properties": {
+      "CornerRadius": {
+       "UDim": [
+        0,
+        14
+       ]
+      }
+     }
+    },
+    {
+     "name": "Stroke",
+     "className": "UIStroke",
+     "properties": {
+      "Color": {
+       "Color3": [
+        0.47059,
+        0.0,
+        0.19608
+       ]
+      },
+      "Thickness": 3,
+      "ApplyStrokeMode": {
+       "Enum": 1
       }
      }
     }

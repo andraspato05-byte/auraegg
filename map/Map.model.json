@@ -9605,7 +9605,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -9613,120 +9613,8 @@
          "CFrame": {
           "position": [
            -172.0,
-           7.0,
+           9.5,
            -9.0
-          ],
-          "orientation": [
-           [
-            1.0,
-            0.0,
-            0.0
-           ],
-           [
-            0.0,
-            1.0,
-            0.0
-           ],
-           [
-            0.0,
-            0.0,
-            1.0
-           ]
-          ]
-         }
-        },
-        "Color": {
-         "Color3": [
-          0.94118,
-          0.93333,
-          0.96078
-         ]
-        },
-        "Material": {
-         "Enum": 784
-        },
-        "TopSurface": {
-         "Enum": 0
-        },
-        "BottomSurface": {
-         "Enum": 0
-        }
-       }
-      },
-      {
-       "name": "PillarGlow",
-       "className": "Part",
-       "properties": {
-        "Anchored": true,
-        "Size": {
-         "Vector3": [
-          2.3,
-          0.6,
-          2.3
-         ]
-        },
-        "CFrame": {
-         "CFrame": {
-          "position": [
-           -172.0,
-           3.0,
-           -9.0
-          ],
-          "orientation": [
-           [
-            1.0,
-            0.0,
-            0.0
-           ],
-           [
-            0.0,
-            1.0,
-            0.0
-           ],
-           [
-            0.0,
-            0.0,
-            1.0
-           ]
-          ]
-         }
-        },
-        "Color": {
-         "Color3": [
-          0.70588,
-          0.43137,
-          1.0
-         ]
-        },
-        "Material": {
-         "Enum": 288
-        },
-        "TopSurface": {
-         "Enum": 0
-        },
-        "BottomSurface": {
-         "Enum": 0
-        }
-       }
-      },
-      {
-       "name": "Pillar",
-       "className": "Part",
-       "properties": {
-        "Anchored": true,
-        "Size": {
-         "Vector3": [
-          2,
-          14,
-          2
-         ]
-        },
-        "CFrame": {
-         "CFrame": {
-          "position": [
-           -172.0,
-           7.0,
-           9.0
           ],
           "orientation": [
            [
@@ -9782,6 +9670,118 @@
           "position": [
            -172.0,
            3.0,
+           -9.0
+          ],
+          "orientation": [
+           [
+            1.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            1.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            1.0
+           ]
+          ]
+         }
+        },
+        "Color": {
+         "Color3": [
+          0.70588,
+          0.43137,
+          1.0
+         ]
+        },
+        "Material": {
+         "Enum": 288
+        },
+        "TopSurface": {
+         "Enum": 0
+        },
+        "BottomSurface": {
+         "Enum": 0
+        }
+       }
+      },
+      {
+       "name": "Pillar",
+       "className": "Part",
+       "properties": {
+        "Anchored": true,
+        "Size": {
+         "Vector3": [
+          2,
+          19,
+          2
+         ]
+        },
+        "CFrame": {
+         "CFrame": {
+          "position": [
+           -172.0,
+           9.5,
+           9.0
+          ],
+          "orientation": [
+           [
+            1.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            1.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            1.0
+           ]
+          ]
+         }
+        },
+        "Color": {
+         "Color3": [
+          0.94118,
+          0.93333,
+          0.96078
+         ]
+        },
+        "Material": {
+         "Enum": 784
+        },
+        "TopSurface": {
+         "Enum": 0
+        },
+        "BottomSurface": {
+         "Enum": 0
+        }
+       }
+      },
+      {
+       "name": "PillarGlow",
+       "className": "Part",
+       "properties": {
+        "Anchored": true,
+        "Size": {
+         "Vector3": [
+          2.3,
+          0.6,
+          2.3
+         ]
+        },
+        "CFrame": {
+         "CFrame": {
+          "position": [
+           -172.0,
+           3.0,
            9.0
           ],
           "orientation": [
@@ -9837,7 +9837,7 @@
          "CFrame": {
           "position": [
            -172.0,
-           14.9,
+           19.9,
            0.0
           ],
           "orientation": [
@@ -9893,7 +9893,7 @@
          "CFrame": {
           "position": [
            -172.0,
-           13.85,
+           18.85,
            0.0
           ],
           "orientation": [
@@ -9965,7 +9965,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -9973,120 +9973,8 @@
          "CFrame": {
           "position": [
            -129.0,
-           7.0,
+           9.5,
            -9.0
-          ],
-          "orientation": [
-           [
-            1.0,
-            0.0,
-            0.0
-           ],
-           [
-            0.0,
-            1.0,
-            0.0
-           ],
-           [
-            0.0,
-            0.0,
-            1.0
-           ]
-          ]
-         }
-        },
-        "Color": {
-         "Color3": [
-          0.94118,
-          0.93333,
-          0.96078
-         ]
-        },
-        "Material": {
-         "Enum": 784
-        },
-        "TopSurface": {
-         "Enum": 0
-        },
-        "BottomSurface": {
-         "Enum": 0
-        }
-       }
-      },
-      {
-       "name": "PillarGlow",
-       "className": "Part",
-       "properties": {
-        "Anchored": true,
-        "Size": {
-         "Vector3": [
-          2.3,
-          0.6,
-          2.3
-         ]
-        },
-        "CFrame": {
-         "CFrame": {
-          "position": [
-           -129.0,
-           3.0,
-           -9.0
-          ],
-          "orientation": [
-           [
-            1.0,
-            0.0,
-            0.0
-           ],
-           [
-            0.0,
-            1.0,
-            0.0
-           ],
-           [
-            0.0,
-            0.0,
-            1.0
-           ]
-          ]
-         }
-        },
-        "Color": {
-         "Color3": [
-          0.70588,
-          0.43137,
-          1.0
-         ]
-        },
-        "Material": {
-         "Enum": 288
-        },
-        "TopSurface": {
-         "Enum": 0
-        },
-        "BottomSurface": {
-         "Enum": 0
-        }
-       }
-      },
-      {
-       "name": "Pillar",
-       "className": "Part",
-       "properties": {
-        "Anchored": true,
-        "Size": {
-         "Vector3": [
-          2,
-          14,
-          2
-         ]
-        },
-        "CFrame": {
-         "CFrame": {
-          "position": [
-           -129.0,
-           7.0,
-           9.0
           ],
           "orientation": [
            [
@@ -10142,6 +10030,118 @@
           "position": [
            -129.0,
            3.0,
+           -9.0
+          ],
+          "orientation": [
+           [
+            1.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            1.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            1.0
+           ]
+          ]
+         }
+        },
+        "Color": {
+         "Color3": [
+          0.70588,
+          0.43137,
+          1.0
+         ]
+        },
+        "Material": {
+         "Enum": 288
+        },
+        "TopSurface": {
+         "Enum": 0
+        },
+        "BottomSurface": {
+         "Enum": 0
+        }
+       }
+      },
+      {
+       "name": "Pillar",
+       "className": "Part",
+       "properties": {
+        "Anchored": true,
+        "Size": {
+         "Vector3": [
+          2,
+          19,
+          2
+         ]
+        },
+        "CFrame": {
+         "CFrame": {
+          "position": [
+           -129.0,
+           9.5,
+           9.0
+          ],
+          "orientation": [
+           [
+            1.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            1.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            1.0
+           ]
+          ]
+         }
+        },
+        "Color": {
+         "Color3": [
+          0.94118,
+          0.93333,
+          0.96078
+         ]
+        },
+        "Material": {
+         "Enum": 784
+        },
+        "TopSurface": {
+         "Enum": 0
+        },
+        "BottomSurface": {
+         "Enum": 0
+        }
+       }
+      },
+      {
+       "name": "PillarGlow",
+       "className": "Part",
+       "properties": {
+        "Anchored": true,
+        "Size": {
+         "Vector3": [
+          2.3,
+          0.6,
+          2.3
+         ]
+        },
+        "CFrame": {
+         "CFrame": {
+          "position": [
+           -129.0,
+           3.0,
            9.0
           ],
           "orientation": [
@@ -10197,7 +10197,7 @@
          "CFrame": {
           "position": [
            -129.0,
-           14.9,
+           19.9,
            0.0
           ],
           "orientation": [
@@ -10253,7 +10253,7 @@
          "CFrame": {
           "position": [
            -129.0,
-           13.85,
+           18.85,
            0.0
           ],
           "orientation": [
@@ -10325,7 +10325,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -10333,120 +10333,8 @@
          "CFrame": {
           "position": [
            -86.0,
-           7.0,
+           9.5,
            -9.0
-          ],
-          "orientation": [
-           [
-            1.0,
-            0.0,
-            0.0
-           ],
-           [
-            0.0,
-            1.0,
-            0.0
-           ],
-           [
-            0.0,
-            0.0,
-            1.0
-           ]
-          ]
-         }
-        },
-        "Color": {
-         "Color3": [
-          0.94118,
-          0.93333,
-          0.96078
-         ]
-        },
-        "Material": {
-         "Enum": 784
-        },
-        "TopSurface": {
-         "Enum": 0
-        },
-        "BottomSurface": {
-         "Enum": 0
-        }
-       }
-      },
-      {
-       "name": "PillarGlow",
-       "className": "Part",
-       "properties": {
-        "Anchored": true,
-        "Size": {
-         "Vector3": [
-          2.3,
-          0.6,
-          2.3
-         ]
-        },
-        "CFrame": {
-         "CFrame": {
-          "position": [
-           -86.0,
-           3.0,
-           -9.0
-          ],
-          "orientation": [
-           [
-            1.0,
-            0.0,
-            0.0
-           ],
-           [
-            0.0,
-            1.0,
-            0.0
-           ],
-           [
-            0.0,
-            0.0,
-            1.0
-           ]
-          ]
-         }
-        },
-        "Color": {
-         "Color3": [
-          0.70588,
-          0.43137,
-          1.0
-         ]
-        },
-        "Material": {
-         "Enum": 288
-        },
-        "TopSurface": {
-         "Enum": 0
-        },
-        "BottomSurface": {
-         "Enum": 0
-        }
-       }
-      },
-      {
-       "name": "Pillar",
-       "className": "Part",
-       "properties": {
-        "Anchored": true,
-        "Size": {
-         "Vector3": [
-          2,
-          14,
-          2
-         ]
-        },
-        "CFrame": {
-         "CFrame": {
-          "position": [
-           -86.0,
-           7.0,
-           9.0
           ],
           "orientation": [
            [
@@ -10502,6 +10390,118 @@
           "position": [
            -86.0,
            3.0,
+           -9.0
+          ],
+          "orientation": [
+           [
+            1.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            1.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            1.0
+           ]
+          ]
+         }
+        },
+        "Color": {
+         "Color3": [
+          0.70588,
+          0.43137,
+          1.0
+         ]
+        },
+        "Material": {
+         "Enum": 288
+        },
+        "TopSurface": {
+         "Enum": 0
+        },
+        "BottomSurface": {
+         "Enum": 0
+        }
+       }
+      },
+      {
+       "name": "Pillar",
+       "className": "Part",
+       "properties": {
+        "Anchored": true,
+        "Size": {
+         "Vector3": [
+          2,
+          19,
+          2
+         ]
+        },
+        "CFrame": {
+         "CFrame": {
+          "position": [
+           -86.0,
+           9.5,
+           9.0
+          ],
+          "orientation": [
+           [
+            1.0,
+            0.0,
+            0.0
+           ],
+           [
+            0.0,
+            1.0,
+            0.0
+           ],
+           [
+            0.0,
+            0.0,
+            1.0
+           ]
+          ]
+         }
+        },
+        "Color": {
+         "Color3": [
+          0.94118,
+          0.93333,
+          0.96078
+         ]
+        },
+        "Material": {
+         "Enum": 784
+        },
+        "TopSurface": {
+         "Enum": 0
+        },
+        "BottomSurface": {
+         "Enum": 0
+        }
+       }
+      },
+      {
+       "name": "PillarGlow",
+       "className": "Part",
+       "properties": {
+        "Anchored": true,
+        "Size": {
+         "Vector3": [
+          2.3,
+          0.6,
+          2.3
+         ]
+        },
+        "CFrame": {
+         "CFrame": {
+          "position": [
+           -86.0,
+           3.0,
            9.0
           ],
           "orientation": [
@@ -10557,7 +10557,7 @@
          "CFrame": {
           "position": [
            -86.0,
-           14.9,
+           19.9,
            0.0
           ],
           "orientation": [
@@ -10613,7 +10613,7 @@
          "CFrame": {
           "position": [
            -86.0,
-           13.85,
+           18.85,
            0.0
           ],
           "orientation": [
@@ -10685,7 +10685,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -10693,7 +10693,7 @@
          "CFrame": {
           "position": [
            -43.0,
-           7.0,
+           9.5,
            -9.0
           ],
           "orientation": [
@@ -10797,7 +10797,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -10805,7 +10805,7 @@
          "CFrame": {
           "position": [
            -43.0,
-           7.0,
+           9.5,
            9.0
           ],
           "orientation": [
@@ -10917,7 +10917,7 @@
          "CFrame": {
           "position": [
            -43.0,
-           14.9,
+           19.9,
            0.0
           ],
           "orientation": [
@@ -10973,7 +10973,7 @@
          "CFrame": {
           "position": [
            -43.0,
-           13.85,
+           18.85,
            0.0
           ],
           "orientation": [
@@ -11045,7 +11045,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -11053,7 +11053,7 @@
          "CFrame": {
           "position": [
            0.0,
-           7.0,
+           9.5,
            -9.0
           ],
           "orientation": [
@@ -11157,7 +11157,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -11165,7 +11165,7 @@
          "CFrame": {
           "position": [
            0.0,
-           7.0,
+           9.5,
            9.0
           ],
           "orientation": [
@@ -11277,7 +11277,7 @@
          "CFrame": {
           "position": [
            0.0,
-           14.9,
+           19.9,
            0.0
           ],
           "orientation": [
@@ -11333,7 +11333,7 @@
          "CFrame": {
           "position": [
            0.0,
-           13.85,
+           18.85,
            0.0
           ],
           "orientation": [
@@ -11405,7 +11405,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -11413,7 +11413,7 @@
          "CFrame": {
           "position": [
            43.0,
-           7.0,
+           9.5,
            -9.0
           ],
           "orientation": [
@@ -11517,7 +11517,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -11525,7 +11525,7 @@
          "CFrame": {
           "position": [
            43.0,
-           7.0,
+           9.5,
            9.0
           ],
           "orientation": [
@@ -11637,7 +11637,7 @@
          "CFrame": {
           "position": [
            43.0,
-           14.9,
+           19.9,
            0.0
           ],
           "orientation": [
@@ -11693,7 +11693,7 @@
          "CFrame": {
           "position": [
            43.0,
-           13.85,
+           18.85,
            0.0
           ],
           "orientation": [
@@ -11765,7 +11765,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -11773,7 +11773,7 @@
          "CFrame": {
           "position": [
            86.0,
-           7.0,
+           9.5,
            -9.0
           ],
           "orientation": [
@@ -11877,7 +11877,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -11885,7 +11885,7 @@
          "CFrame": {
           "position": [
            86.0,
-           7.0,
+           9.5,
            9.0
           ],
           "orientation": [
@@ -11997,7 +11997,7 @@
          "CFrame": {
           "position": [
            86.0,
-           14.9,
+           19.9,
            0.0
           ],
           "orientation": [
@@ -12053,7 +12053,7 @@
          "CFrame": {
           "position": [
            86.0,
-           13.85,
+           18.85,
            0.0
           ],
           "orientation": [
@@ -12125,7 +12125,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -12133,7 +12133,7 @@
          "CFrame": {
           "position": [
            129.0,
-           7.0,
+           9.5,
            -9.0
           ],
           "orientation": [
@@ -12237,7 +12237,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -12245,7 +12245,7 @@
          "CFrame": {
           "position": [
            129.0,
-           7.0,
+           9.5,
            9.0
           ],
           "orientation": [
@@ -12357,7 +12357,7 @@
          "CFrame": {
           "position": [
            129.0,
-           14.9,
+           19.9,
            0.0
           ],
           "orientation": [
@@ -12413,7 +12413,7 @@
          "CFrame": {
           "position": [
            129.0,
-           13.85,
+           18.85,
            0.0
           ],
           "orientation": [
@@ -12485,7 +12485,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -12493,7 +12493,7 @@
          "CFrame": {
           "position": [
            172.0,
-           7.0,
+           9.5,
            -9.0
           ],
           "orientation": [
@@ -12597,7 +12597,7 @@
         "Size": {
          "Vector3": [
           2,
-          14,
+          19,
           2
          ]
         },
@@ -12605,7 +12605,7 @@
          "CFrame": {
           "position": [
            172.0,
-           7.0,
+           9.5,
            9.0
           ],
           "orientation": [
@@ -12717,7 +12717,7 @@
          "CFrame": {
           "position": [
            172.0,
-           14.9,
+           19.9,
            0.0
           ],
           "orientation": [
@@ -12773,7 +12773,7 @@
          "CFrame": {
           "position": [
            172.0,
-           13.85,
+           18.85,
            0.0
           ],
           "orientation": [
