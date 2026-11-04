@@ -30,6 +30,25 @@ Config.StealHoldDuration = 1.5
 Config.CarryWalkSpeed = 11
 Config.NormalWalkSpeed = 16
 
+-- Speed + treadmills ----------------------------------------------------------
+-- Running on a treadmill in the gym earns Speed points.
+-- Walk speed = NormalWalkSpeed + Speed * SpeedPerPoint (max MaxSpeed points).
+Config.SpeedPerPoint = 0.05 -- 20 Speed = +1 walk speed
+Config.MaxSpeed = 500 -- 500 Speed = 16 + 25 = 41 walk speed
+Config.CarrySpeedFactor = 0.7 -- carrying an egg slows you to 70% (never below CarryWalkSpeed)
+-- PushSpeed = how fast the belt pushes you back (studs/s). You need to run faster than it.
+Config.Treadmills = {
+	{ Tier = 1, Rate = 1, Required = 0, PushSpeed = 6 },
+	{ Tier = 2, Rate = 2, Required = 100, PushSpeed = 12 },
+	{ Tier = 3, Rate = 4, Required = 250, PushSpeed = 18 },
+	{ Tier = 4, Rate = 8, Required = 400, PushSpeed = 24 },
+}
+
+function Config.GetWalkSpeed(speedPoints)
+	local points = math.clamp(math.floor(speedPoints or 0), 0, Config.MaxSpeed)
+	return Config.NormalWalkSpeed + points * Config.SpeedPerPoint
+end
+
 -- Bat -----------------------------------------------------------------------
 Config.BatName = "Aura Bat"
 Config.BatCooldown = 0.9

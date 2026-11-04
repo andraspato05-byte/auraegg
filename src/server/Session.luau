@@ -4,6 +4,10 @@
 	mirrors them into leaderstats so they show on the player list.
 ]]
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+
 local Session = {}
 
 local sessions = {}
@@ -27,18 +31,25 @@ function Session.Create(player)
 	stealsValue.Value = 0
 	stealsValue.Parent = leaderstats
 
+	local speedValue = Instance.new("IntValue")
+	speedValue.Name = "Speed"
+	speedValue.Value = 0
+	speedValue.Parent = leaderstats
+
 	leaderstats.Parent = player
 
 	local session = {
 		Player = player,
 		Cash = 0,
 		Steals = 0,
+		Speed = 0, -- treadmill Speed points (can be fractional; leaderstats shows the whole number)
 		Loaded = false, -- true once saved data has been applied
 		CanSave = false, -- false if loading failed, so we never overwrite real data
 		SavedEggs = nil, -- eggs kept aside while the player is waiting for a free base
 		FinalSaved = false, -- true once the shutdown save has been queued
 		CashValue = cashValue,
 		StealsValue = stealsValue,
+		SpeedValue = speedValue,
 	}
 	sessions[player] = session
 	return session
@@ -86,6 +97,31 @@ function Session.SetSteals(player, amount)
 	end
 	session.Steals = math.max(0, math.floor(amount))
 	session.StealsValue.Value = session.Steals
+end
+
+-- Returns true if the whole-number Speed changed (so walk speed should be refreshed).
+function Session.SetSpeed(player, amount)
+	local session = sessions[player]
+	if not session then
+		return false
+	end
+	local before = math.floor(session.Speed)
+	session.Speed = math.clamp(amount, 0, Config.MaxSpeed)
+	session.SpeedValue.Value = math.floor(session.Speed)
+	return math.floor(session.Speed) ~= before
+end
+
+function Session.AddSpeed(player, amount)
+	local session = sessions[player]
+	if not session then
+		return false
+	end
+	return Session.SetSpeed(player, session.Speed + amount)
+end
+
+function Session.GetWalkSpeed(player)
+	local session = sessions[player]
+	return Config.GetWalkSpeed(session and session.Speed or 0)
 end
 
 function Session.AddSteal(player)

@@ -97,7 +97,11 @@ local function cashMultiplier(player)
 end
 
 local function carrySpeedFor(player)
-	return player:GetAttribute("Pass_FastCarry") == true and Config.NormalWalkSpeed or Config.CarryWalkSpeed
+	local walkSpeed = Session.GetWalkSpeed(player)
+	if player:GetAttribute("Pass_FastCarry") == true then
+		return walkSpeed
+	end
+	return math.max(Config.CarryWalkSpeed, walkSpeed * Config.CarrySpeedFactor)
 end
 
 local function lockDurationFor(player)
@@ -336,7 +340,7 @@ local function endCarry(thief)
 	local character = thief.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if humanoid then
-		humanoid.WalkSpeed = Config.NormalWalkSpeed
+		humanoid.WalkSpeed = Session.GetWalkSpeed(thief)
 	end
 	thief:SetAttribute("CarryingEgg", "")
 	return carry
@@ -567,6 +571,17 @@ function PlotService.IsCarrying(player)
 	return carriers[player] ~= nil
 end
 
+-- Sets the humanoid's walk speed from the player's Speed stat (slower while carrying).
+function PlotService.RefreshWalkSpeed(player)
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if not humanoid then
+		return
+	end
+	local carry = carriers[player]
+	humanoid.WalkSpeed = carry and carry.Speed or Session.GetWalkSpeed(player)
+end
+
 function PlotService.IsShuttingDown()
 	return shuttingDown
 end
@@ -702,6 +717,7 @@ function PlotService.BuildSaveData(player)
 	return {
 		Cash = session.Cash + pending,
 		Steals = session.Steals,
+		Speed = session.Speed,
 		Eggs = eggs,
 	}
 end

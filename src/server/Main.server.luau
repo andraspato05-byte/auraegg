@@ -18,6 +18,7 @@ local DataManager = require(Server.DataManager)
 local PlotService = require(Server.PlotService)
 local ConveyorService = require(Server.ConveyorService)
 local BatService = require(Server.BatService)
+local TreadmillService = require(Server.TreadmillService)
 local MonetizationService = require(Server.MonetizationService)
 
 ------------------------------------------------------------------------------
@@ -40,6 +41,7 @@ local world = MapBuilder.Build()
 PlotService.Init(world.Plots)
 ConveyorService.Init(world.Belt)
 BatService.Init()
+TreadmillService.Init(world.Treadmills)
 MonetizationService.Init()
 
 ------------------------------------------------------------------------------
@@ -53,7 +55,7 @@ local function onCharacterAdded(player, character)
 		return
 	end
 
-	humanoid.WalkSpeed = Config.NormalWalkSpeed
+	humanoid.WalkSpeed = Session.GetWalkSpeed(player)
 	humanoid.Died:Connect(function()
 		PlotService.CancelCarry(player, "You got knocked out and dropped the egg!")
 	end)
@@ -109,6 +111,8 @@ local function onPlayerAdded(player)
 	session.CanSave = canSave
 	Session.SetCash(player, data.Cash)
 	Session.SetSteals(player, data.Steals)
+	Session.SetSpeed(player, data.Speed)
+	PlotService.RefreshWalkSpeed(player)
 	if PlotService.GetPlot(player) then
 		PlotService.LoadEggs(player, data.Eggs)
 	else

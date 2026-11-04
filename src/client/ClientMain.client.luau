@@ -64,7 +64,7 @@ local cashPanel = Instance.new("Frame")
 cashPanel.Name = "CashPanel"
 cashPanel.AnchorPoint = Vector2.new(0.5, 0)
 cashPanel.Position = UDim2.new(0.5, 0, 0, 8)
-cashPanel.Size = UDim2.new(0, 260, 0, 70)
+cashPanel.Size = UDim2.new(0, 260, 0, 92)
 cashPanel.BackgroundColor3 = Color3.fromRGB(30, 20, 50)
 cashPanel.BackgroundTransparency = 0.15
 cashPanel.Parent = screenGui
@@ -75,7 +75,7 @@ local cashLabel = newLabel(
 	cashPanel,
 	"Cash",
 	"$0",
-	UDim2.new(1, -16, 0.6, 0),
+	UDim2.new(1, -16, 0, 44),
 	UDim2.new(0, 8, 0, 4),
 	Color3.fromRGB(120, 255, 140)
 )
@@ -83,16 +83,24 @@ local incomeLabel = newLabel(
 	cashPanel,
 	"Income",
 	"+$0/s",
-	UDim2.new(1, -16, 0.32, 0),
-	UDim2.new(0, 8, 0.62, 0),
+	UDim2.new(1, -16, 0, 22),
+	UDim2.new(0, 8, 0, 48),
 	Color3.fromRGB(255, 230, 120)
+)
+local speedLabel = newLabel(
+	cashPanel,
+	"Speed",
+	"Speed 0",
+	UDim2.new(1, -16, 0, 18),
+	UDim2.new(0, 8, 0, 70),
+	Color3.fromRGB(120, 220, 255)
 )
 
 -- Notifications (under the cash panel)
 local notifyHolder = Instance.new("Frame")
 notifyHolder.Name = "Notifications"
 notifyHolder.AnchorPoint = Vector2.new(0.5, 0)
-notifyHolder.Position = UDim2.new(0.5, 0, 0, 86)
+notifyHolder.Position = UDim2.new(0.5, 0, 0, 108)
 notifyHolder.Size = UDim2.new(0, 460, 0, 220)
 notifyHolder.BackgroundTransparency = 1
 notifyHolder.Parent = screenGui
@@ -122,7 +130,7 @@ local tips = Instance.new("TextLabel")
 tips.Name = "HowToPlay"
 tips.AnchorPoint = Vector2.new(0, 1)
 tips.Position = UDim2.new(0, 12, 1, -12)
-tips.Size = UDim2.new(0, 330, 0, 168)
+tips.Size = UDim2.new(0, 330, 0, 186)
 tips.BackgroundColor3 = Color3.fromRGB(30, 20, 50)
 tips.BackgroundTransparency = 0.25
 tips.Font = Enum.Font.GothamMedium
@@ -138,6 +146,7 @@ tips.Text = "HOW TO PLAY\n"
 	.. "- Steal eggs from other bases (hold E) and run home\n"
 	.. "- Bonk thieves with your Aura Bat to get eggs back\n"
 	.. "- Stand on the red pad to lock your base\n"
+	.. "- Run on treadmills in the GYM to get faster\n"
 	.. "- Press SHOP for Robux boosts"
 tips.Parent = screenGui
 addCorner(tips, 10)
@@ -186,6 +195,14 @@ task.spawn(function()
 	end
 	cash.Changed:Connect(refreshCash)
 	refreshCash()
+
+	local speed = leaderstats:WaitForChild("Speed")
+	local function refreshSpeed()
+		local walk = Config.GetWalkSpeed(speed.Value)
+		speedLabel.Text = "Speed " .. speed.Value .. "  (walk " .. string.format("%.1f", walk) .. ")"
+	end
+	speed.Changed:Connect(refreshSpeed)
+	refreshSpeed()
 end)
 
 ------------------------------------------------------------------------------
@@ -521,4 +538,67 @@ shopButton.Activated:Connect(function()
 end)
 closeButton.Activated:Connect(function()
 	shopPanel.Visible = false
+end)
+
+------------------------------------------------------------------------------
+-- Treadmills: push the runner back (also set locally so it always works)
+-- and scroll the stripes so the belts look like they're moving
+------------------------------------------------------------------------------
+
+local pushByTier = {}
+for _, tier in Config.Treadmills do
+	pushByTier[tier.Tier] = tier.PushSpeed
+end
+
+local movingStripes = {} -- { Part, Belt, X, Y, StartZ, Push }
+local setupTreadmills = {}
+
+local function setupTreadmill(treadmill)
+	if setupTreadmills[treadmill] then
+		return
+	end
+	local belt = treadmill:FindFirstChild("Belt")
+	local push = pushByTier[treadmill:GetAttribute("Tier")]
+	if not belt or not belt:IsA("BasePart") or not push then
+		return
+	end
+	setupTreadmills[treadmill] = true
+	belt.AssemblyLinearVelocity = -belt.CFrame.LookVector * push
+
+	for _, child in treadmill:GetChildren() do
+		if child:IsA("BasePart") and child.Name == "Stripe" then
+			local localPos = belt.CFrame:PointToObjectSpace(child.Position)
+			table.insert(movingStripes, {
+				Part = child,
+				Belt = belt,
+				X = localPos.X,
+				Y = localPos.Y,
+				StartZ = localPos.Z,
+				Push = push,
+			})
+		end
+	end
+end
+
+local function considerTreadmill(instance)
+	if instance:IsA("Model") and instance.Name == "Treadmill" then
+		-- children can arrive a moment after the model
+		task.defer(setupTreadmill, instance)
+	end
+end
+
+workspace.DescendantAdded:Connect(considerTreadmill)
+for _, descendant in workspace:GetDescendants() do
+	considerTreadmill(descendant)
+end
+
+RunService.RenderStepped:Connect(function()
+	local now = os.clock()
+	for _, stripe in movingStripes do
+		local length = stripe.Belt.Size.Z
+		local half = length / 2
+		-- the belt surface moves towards local +Z (the back of the treadmill)
+		local z = ((stripe.StartZ + half + now * stripe.Push) % length) - half
+		stripe.Part.CFrame = stripe.Belt.CFrame * CFrame.new(stripe.X, stripe.Y, z)
+	end
 end)

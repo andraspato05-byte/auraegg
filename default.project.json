@@ -24,10 +24,30 @@
       }
     },
     "Workspace": {
-      "$className": "Workspace"
+      "$className": "Workspace",
+      "$properties": {
+        "StreamingEnabled": false
+      },
+      "Map": {
+        "$path": "map/Map.model.json"
+      },
+      "Plots": {
+        "$path": "map/Plots.model.json"
+      }
     },
     "Lighting": {
-      "$className": "Lighting"
+      "$className": "Lighting",
+      "$properties": {
+        "ClockTime": 14.5,
+        "Brightness": 2,
+        "OutdoorAmbient": {
+          "Color3": [
+            0.549,
+            0.51,
+            0.627
+          ]
+        }
+      }
     },
     "Players": {
       "$className": "Players"

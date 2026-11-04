@@ -54,6 +54,7 @@ local function defaultData()
 	return {
 		Cash = Config.StartingCash,
 		Steals = 0,
+		Speed = 0,
 		Eggs = {}, -- [slotIndex: number] = eggId
 	}
 end
@@ -74,6 +75,9 @@ local function sanitize(raw)
 	end
 	if isValidCount(raw.Steals) then
 		data.Steals = math.floor(raw.Steals)
+	end
+	if isValidCount(raw.Speed) then
+		data.Speed = math.min(raw.Speed, Config.MaxSpeed)
 	end
 
 	if type(raw.Eggs) == "table" then
@@ -192,6 +196,7 @@ local function write(userId, job)
 				local record = {
 					Cash = job.Data.Cash,
 					Steals = job.Data.Steals,
+					Speed = job.Data.Speed,
 					Eggs = job.Data.Eggs,
 				}
 				if not job.Release then
@@ -213,7 +218,7 @@ local function write(userId, job)
 	end
 end
 
--- data = { Cash = number, Steals = number, Eggs = { ["1"] = eggId, ... } }
+-- data = { Cash = number, Steals = number, Speed = number, Eggs = { ["1"] = eggId, ... } }
 -- Egg keys must be strings so the DataStore stores a dictionary, not a holey array.
 -- release = true for the final save of a session (player leaving / server closing).
 -- Does not yield: the write happens in the background, in order, per player.
